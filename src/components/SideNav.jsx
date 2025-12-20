@@ -8,8 +8,8 @@ import {
     Clock,
     Tv2,
     ListVideo,
-    User,
-    Plus
+    Plus,
+    Settings
 } from 'lucide-react';
 import { playlistService, subscriptionService } from '../services/storage';
 import PlaylistModal from './PlaylistModal';
@@ -46,6 +46,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
     const secondaryItems = [
         { path: '/playlist/later', icon: Clock, label: 'Watch Later' },
         { path: '/library?tab=history', icon: History, label: 'History' },
+        { path: '/settings', icon: Settings, label: 'Settings' },
     ];
 
     const [expandedSubs, setExpandedSubs] = useState(false);

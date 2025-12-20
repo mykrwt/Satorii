@@ -1,10 +1,10 @@
 .top-bar {
-    height: var(--header-height);
+    height: calc(var(--header-height) + env(safe-area-inset-top));
     background: var(--bg-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 16px;
+    padding: env(safe-area-inset-top) 16px 0 16px;
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -21,14 +21,32 @@
 .logo-section {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     cursor: pointer;
     user-select: none;
 }
 
-@media (max-width: 768px) {
-    .desktop-only {
+.menu-btn-mobile {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .menu-btn-mobile {
+        display: flex;
+        margin-right: 8px;
+    }
+
+    .mobile-hidden {
         display: none !important;
+    }
+
+    .top-bar-left {
+        min-width: 0;
+    }
+
+    .top-bar-center {
+        padding: 0;
+        margin-left: 0;
     }
 }
 
@@ -47,8 +65,8 @@
     flex: 1;
     max-width: 720px;
     display: flex;
+    align-items: center;
     justify-content: center;
-    padding: 0 40px;
 }
 
 .search-container {
@@ -63,8 +81,7 @@
     align-items: center;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-right: none;
-    border-radius: 40px 0 0 40px;
+    border-radius: 40px;
     padding: 0 16px;
     transition: all 0.2s;
 }
@@ -127,66 +144,30 @@
 /* Mobile Adjustments */
 @media (max-width: 768px) {
     .top-bar {
-        padding: 0 8px;
-        gap: 8px;
-    }
-
-    .top-bar-left {
-        min-width: auto;
-        gap: 4px;
-    }
-
-    .logo-text {
-        display: none;
-        /* Hide text on mobile to save space */
-    }
-
-    .logo-icon {
-        height: 24px;
-    }
-
-    .top-bar-center {
-        padding: 0;
-        margin: 0 4px;
-        flex: 1;
-        max-width: none;
-        display: flex;
+        padding: env(safe-area-inset-top) 12px 0 12px;
     }
 
     .search-container {
-        height: 36px;
+        height: 38px;
     }
 
     .search-input-wrapper {
-        padding: 0 10px;
+        padding: 0 12px;
     }
 
     .search-input-wrapper input {
-        font-size: 14px;
+        font-size: 15px;
     }
 
     .search-submit {
-        width: 44px;
+        width: 50px;
     }
 
     .top-bar-right {
-        min-width: auto;
-        gap: 4px;
+        min-width: 0;
     }
 
-    .menu-btn {
-        display: none;
-        /* Often hidden on mobile when bottom nav exists, but keep for now if they like it */
-    }
-}
-
-@media (max-width: 480px) {
-    .logo-section {
-        display: none;
-        /* Only show search on tiny screens or hide something else */
-    }
-
-    .top-bar-left {
-        display: none;
+    .desktop-only {
+        display: none !important;
     }
 }

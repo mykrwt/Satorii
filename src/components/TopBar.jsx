@@ -22,10 +22,10 @@ const TopBar = ({ toggleNav }) => {
 
     return (
         <header className="top-bar">
-            <div className="top-bar-left">
-                <button className="btn-icon menu-btn" onClick={toggleNav}>
-                    <Menu size={22} />
-                </button>
+            {/* Notch and status bar protection */}
+            <div className="safe-area-top" />
+
+            <div className="top-bar-left mobile-hidden">
                 <div className="logo-section" onClick={() => navigate('/')}>
                     <img src="/satorii.png" alt="Satorii" className="logo-icon" />
                     <span className="logo-text">Satorii</span>
@@ -33,12 +33,15 @@ const TopBar = ({ toggleNav }) => {
             </div>
 
             <div className="top-bar-center">
+                <button className="btn-icon menu-btn-mobile" onClick={toggleNav}>
+                    <Menu size={22} />
+                </button>
                 <form className={`search-container ${isFocused ? 'focused' : ''}`} onSubmit={handleSearch}>
                     <div className="search-input-wrapper">
                         {isFocused && <Search size={18} className="search-icon-focused" />}
                         <input
                             type="text"
-                            placeholder="Search"
+                            placeholder="Search Satorii"
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             onFocus={() => setIsFocused(true)}
@@ -51,15 +54,13 @@ const TopBar = ({ toggleNav }) => {
                         )}
                     </div>
                     <button type="submit" className="search-submit" title="Search">
-                        <Search size={20} />
+                        <Search size={22} />
                     </button>
                 </form>
             </div>
 
-            <div className="top-bar-right">
-                <button className="btn-icon profile-btn" onClick={() => navigate('/settings')} title="Settings">
-                    <Settings size={20} />
-                </button>
+            <div className="top-bar-right desktop-only">
+                {/* Space for future desktop items or user avatar */}
             </div>
         </header>
     );
