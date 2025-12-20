@@ -21,6 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.satorii.app.model.VideoItem
@@ -47,17 +48,19 @@ fun PlayerScreen(
                 .aspectRatio(16f / 9f)
                 .background(Color.Black)
         ) {
-            // In a real app, we would use a library to get the stream URL.
-            // Here we use the Media3 PlayerView.
-            AndroidView(
-                factory = { ctx ->
-                    PlayerView(ctx).apply {
-                        // We would link this to the MediaController from playerViewModel
-                        // For now, it's a placeholder.
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+            // Connect PlayerView to the MediaController
+            val player = playerViewModel.getPlayer()
+            if (player != null) {
+                AndroidView(
+                    factory = { ctx ->
+                        PlayerView(ctx).apply {
+                            this.player = player
+                            useController = true
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
 
         currentVideo?.let { video ->
@@ -84,9 +87,15 @@ fun PlayerScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 // Seekbar Placeholder
+                val player = playerViewModel.getPlayer()
+                val position by remember { derivedStateOf { player?.currentPosition ?: 0L } }
+                val duration by remember { derivedStateOf { player?.duration ?: 1L } }
+                
                 Slider(
-                    value = 0f,
-                    onValueChange = {},
+                    value = if (duration > 0) (position.toFloat() / duration.toFloat()) else 0f,
+                    onValueChange = { progress ->
+                        player?.seekTo((progress * duration).toLong())
+                    },
                     colors = SliderDefaults.colors(
                         thumbColor = MaterialTheme.colorScheme.primary,
                         activeTrackColor = MaterialTheme.colorScheme.primary,
@@ -97,8 +106,8 @@ fun PlayerScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("0:00", fontSize = 12.sp, color = Color.Gray)
-                    Text("4:20", fontSize = 12.sp, color = Color.Gray)
+                    Text(formatTime(position), fontSize = 12.sp, color = Color.Gray)
+                    Text(formatTime(duration), fontSize = 12.sp, color = Color.Gray)
                 }
 
                 Row(
@@ -117,9 +126,11 @@ fun PlayerScreen(
                             modifier = Modifier.size(32.dp)
                         )
                     }
-                    
-                    Icon(Icons.Default.SkipPrevious, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
-                    
+
+                    IconButton(onClick = { playerViewModel.skipPrevious() }) {
+                        Icon(Icons.Default.SkipPrevious, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+                    }
+
                     Surface(
                         shape = androidx.compose.foundation.shape.CircleShape,
                         color = MaterialTheme.colorScheme.primary,
@@ -135,10 +146,14 @@ fun PlayerScreen(
                             )
                         }
                     }
-                    
-                    Icon(Icons.Default.SkipNext, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
-                    
-                    Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+
+                    IconButton(onClick = { playerViewModel.skipNext() }) {
+                        Icon(Icons.Default.SkipNext, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+                    }
+
+                    IconButton(onClick = { /* Share functionality */ }) {
+                        Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+                    }
                 }
 
                 Surface(
@@ -149,7 +164,7 @@ fun PlayerScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("About the Artist", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Text(
-                            text = video.snippet.description,
+                            text = video.snippet.description.ifEmpty { "No description available" },
                             fontSize = 14.sp,
                             color = Color.LightGray,
                             maxLines = 4,
@@ -160,6 +175,13 @@ fun PlayerScreen(
             }
         }
     }
+}
+
+fun formatTime(milliseconds: Long): String {
+    val seconds = milliseconds / 1000
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return String.format("%d:%02d", minutes, remainingSeconds)
 }
 
 @Composable

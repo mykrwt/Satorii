@@ -39,7 +39,7 @@ class PlayerViewModel : ViewModel() {
 
     fun initController(context: Context) {
         if (controller != null) return
-        
+
         val sessionToken = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
         controllerFuture?.addListener({
@@ -56,6 +56,10 @@ class PlayerViewModel : ViewModel() {
         }, { it.run() })
     }
 
+    fun getPlayer(): Player? {
+        return controller?.player
+    }
+
     fun playVideo(video: VideoItem) {
         _currentVideo.value = video
         
@@ -64,6 +68,19 @@ class PlayerViewModel : ViewModel() {
             favoriteDao.isFavorite(video.id).collectLatest {
                 _isFavorite.value = it
             }
+        }
+        
+        // Add to history
+        CoroutineScope(Dispatchers.IO).launch {
+            val historyDao = SatoriiApp.database.historyDao()
+            val historyItem = WatchHistory(
+                id = video.id,
+                title = video.snippet.title,
+                channelTitle = video.snippet.channelTitle,
+                thumbnail = video.snippet.thumbnails.high.url,
+                position = 0
+            )
+            historyDao.addToHistory(historyItem)
         }
         
         CoroutineScope(Dispatchers.Main).launch {
@@ -93,6 +110,14 @@ class PlayerViewModel : ViewModel() {
         controller?.let {
             if (it.isPlaying) it.pause() else it.play()
         }
+    }
+
+    fun skipPrevious() {
+        controller?.seekToPrevious()
+    }
+
+    fun skipNext() {
+        controller?.seekToNext()
     }
 
     fun toggleFavorite() {
