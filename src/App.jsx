@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import VideoPlayer from './pages/VideoPlayer';
@@ -11,10 +11,24 @@ import SideNav from './components/SideNav';
 import TopBar from './components/TopBar';
 import './App.css';
 
-function App() {
+// Global Player State & Persistent Rendering
+function AppContent() {
+    const location = useLocation();
+    const navigate = useNavigate();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [navCollapsed, setNavCollapsed] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    // Persistent Player State
+    const [activeVideoId, setActiveVideoId] = useState(null);
+    const isWatchPage = location.pathname.startsWith('/watch/');
+    const currentPathVideoId = isWatchPage ? location.pathname.split('/watch/')[1] : null;
+
+    useEffect(() => {
+        if (currentPathVideoId && currentPathVideoId !== activeVideoId) {
+            setActiveVideoId(currentPathVideoId);
+        }
+    }, [currentPathVideoId, activeVideoId]);
 
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
@@ -39,40 +53,52 @@ function App() {
     const toggleNav = () => setNavCollapsed(!navCollapsed);
 
     return (
-        <Router>
-            <div className="app-container">
-                <TopBar toggleNav={toggleNav} />
+        <div className={`app-container ${activeVideoId && !isWatchPage ? 'has-mini-player' : ''}`}>
+            <TopBar toggleNav={toggleNav} />
 
-                <div className="app-layout">
-                    <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
+            <div className="app-layout">
+                <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
 
-                    {/* Only render backdrop on mobile and when NOT collapsed */}
-                    {!navCollapsed && isMobile && (
-                        <div className="nav-backdrop" onClick={() => setNavCollapsed(true)}></div>
+                {!navCollapsed && isMobile && (
+                    <div className="nav-backdrop" onClick={() => setNavCollapsed(true)}></div>
+                )}
+
+                <main className="main-content">
+                    {!isOnline && (
+                        <div className="offline-banner">
+                            <span>⚠️ You're offline. Some features may not work.</span>
+                        </div>
                     )}
 
-                    <main className="main-content">
-                        {!isOnline && (
-                            <div className="offline-banner">
-                                <span>⚠️ You're offline. Some features may not work.</span>
-                            </div>
-                        )}
-
-                        <div className="page-scroll-container">
-                            <Routes>
-                                <Route path="/" element={<Home />} />
-                                <Route path="/search" element={<Search />} />
-                                <Route path="/watch/:videoId" element={<VideoPlayer />} />
-                                <Route path="/channel/:channelId" element={<Channel />} />
-                                <Route path="/playlist/:playlistId" element={<Playlist />} />
-                                <Route path="/library" element={<Library />} />
-                                <Route path="/settings" element={<Settings />} />
-                                <Route path="*" element={<Navigate to="/" replace />} />
-                            </Routes>
-                        </div>
-                    </main>
-                </div>
+                    <div className="page-scroll-container">
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/search" element={<Search />} />
+                            <Route path="/watch/:videoId" element={<VideoPlayer persistent={true} />} />
+                            <Route path="/channel/:channelId" element={<Channel />} />
+                            <Route path="/playlist/:playlistId" element={<Playlist />} />
+                            <Route path="/library" element={<Library />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Routes>
+                    </div>
+                </main>
             </div>
+
+            {/* Global Mini-Player - only shows when playing but NOT on watch page */}
+            {activeVideoId && !isWatchPage && (
+                <div className="mini-player-dock animate-fade" onClick={() => navigate(`/watch/${activeVideoId}`)}>
+                    <VideoPlayer mini={true} videoId={activeVideoId} />
+                </div>
+            )}
+        </div>
+    );
+}
+
+function App() {
+    return (
+        <Router>
+            <AppContent />
         </Router>
     );
 }

@@ -42,21 +42,15 @@
     white-space: nowrap;
 }
 
-.logo-container.hidden {
-    display: none;
-}
-
 .logo-img {
     height: 32px;
     width: auto;
-    object-fit: contain;
 }
 
 .logo-text {
     font-size: 18px;
     font-weight: 700;
     letter-spacing: -0.5px;
-    font-family: 'Roboto', sans-serif;
 }
 
 .nav-section {
@@ -84,7 +78,7 @@
 .nav-divider {
     height: 1px;
     background: var(--border-color);
-    margin: 0 16px;
+    margin: 8px 16px;
     flex-shrink: 0;
 }
 
@@ -99,6 +93,12 @@
     transition: var(--transition-smooth);
     white-space: nowrap;
     overflow: hidden;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font: inherit;
 }
 
 .side-nav.collapsed .nav-item {
@@ -125,6 +125,35 @@
     flex-shrink: 0;
 }
 
+/* Updated always dark color */
+.show-more-subs {
+    margin-top: 4px;
+    background: #0a0c0a !important;
+    /* Force darker than nav buttons */
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.show-more-subs:hover {
+    background: #000000 !important;
+    color: var(--text-primary);
+    border-color: var(--accent-muted);
+}
+
+.mini-btn {
+    width: 28px;
+    height: 28px;
+    opacity: 0.6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-btn:hover {
+    opacity: 1;
+    color: var(--accent-primary);
+}
+
 .nav-footer {
     margin-top: auto;
     padding: 24px;
@@ -134,20 +163,23 @@
 
 @media (max-width: 1024px) {
     .side-nav {
-        position: absolute;
-        transform: translateX(-100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1001;
         background: var(--bg-primary);
-        /* Use primary bg on mobile for better contrast if overlaying */
-        border-right: 1px solid var(--border-color);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+        transform: translateX(-100%);
+    }
+
+    .side-nav:not(.collapsed) {
+        transform: translateX(0);
+        width: 240px;
     }
 
     .side-nav.collapsed {
-        width: 0;
-        /* Fully hide on mobile unless toggled */
         transform: translateX(-100%);
+        width: 0;
     }
-
-    /* When we want to show it on mobile, we'd need a different class key, 
-     but for now let's stick to the desktop logic mainly as requested 
-  */
 }

@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import './VideoPlayer.css';
 
-const VideoPlayer = () => {
-    const { videoId } = useParams();
+const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
+    const { videoId: routeVideoId } = useParams();
+    const videoId = propVideoId || routeVideoId;
+
     const navigate = useNavigate();
     const [video, setVideo] = useState(null);
     const [relatedVideos, setRelatedVideos] = useState([]);
@@ -98,6 +100,28 @@ const VideoPlayer = () => {
                     console.log("Could not fetch channel icon for sub");
                 }
 
+                // Media Session API for Background Play/Controls
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: currentVideo.snippet.title,
+                        artist: currentVideo.snippet.channelTitle,
+                        artwork: [
+                            { src: currentVideo.snippet.thumbnails.high.url, sizes: '480x360', type: 'image/jpeg' },
+                            { src: currentVideo.snippet.thumbnails.medium.url, sizes: '320x180', type: 'image/jpeg' }
+                        ]
+                    });
+
+                    // Keep handlers active
+                    navigator.mediaSession.setActionHandler('play', () => {
+                        const iframe = document.querySelector('iframe');
+                        iframe?.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                    });
+                    navigator.mediaSession.setActionHandler('pause', () => {
+                        const iframe = document.querySelector('iframe');
+                        iframe?.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                    });
+                }
+
                 historyService.add({
                     id: videoId,
                     title: currentVideo.snippet.title,
@@ -107,37 +131,28 @@ const VideoPlayer = () => {
                 });
             }
 
-            // 2. Get Related Videos (Smart Service Fallback)
-            if (currentVideo) {
+            // ONLY fetch more data if NOT in mini mode
+            if (!mini && currentVideo) {
+                // 2. Get Related Videos
                 try {
-                    // Pass title for fallback search
                     let relatedData = await youtubeAPI.getRelatedVideos(videoId, 20, null, currentVideo.snippet.title);
                     let items = relatedData.items || [];
-
-                    // ENRICH: Get full details (HD thumbs, duration)
                     if (items.length > 0) {
                         const ids = items.map(i => i.id.videoId || i.id).filter(id => typeof id === 'string');
                         if (ids.length > 0) {
                             const enriched = await youtubeAPI.getVideosByIds(ids);
-                            if (enriched.items?.length > 0) {
-                                items = enriched.items;
-                            }
+                            if (enriched.items?.length > 0) items = enriched.items;
                         }
                     }
-
                     setRelatedVideos(items);
                     setNextPageToken(relatedData.nextPageToken);
-                } catch (err) {
-                    console.warn("Related fetch visual error", err);
-                }
-            }
+                } catch (err) { console.warn("Related fetch error", err); }
 
-            // 3. Get Comments
-            try {
-                const commentsData = await youtubeAPI.getComments(videoId, 20);
-                setComments(commentsData.items || []);
-            } catch (err) {
-                console.warn("Comments are disabled or restricted");
+                // 3. Get Comments
+                try {
+                    const commentsData = await youtubeAPI.getComments(videoId, 20);
+                    setComments(commentsData.items || []);
+                } catch (err) { console.warn("Comments restricted"); }
             }
 
         } catch (err) {
@@ -224,13 +239,32 @@ const VideoPlayer = () => {
         return number.toString();
     };
 
+    if (mini) {
+        return (
+            <div className="mini-player-contents">
+                <div className="mini-player-iframe">
+                    <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
+                        title="Video Player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    />
+                </div>
+                <div className="mini-player-info">
+                    <span className="mini-video-title">{video?.snippet?.title || 'Loading...'}</span>
+                    <span className="mini-video-channel">{video?.snippet?.channelTitle}</span>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="video-player-page">
             <div className="player-main-column">
                 <div className="player-container">
                     <div className="player-wrapper">
                         <iframe
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1`}
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
                             title="Video Player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -245,7 +279,10 @@ const VideoPlayer = () => {
                             <h1 className="video-title-full">{video.snippet.title}</h1>
 
                             <div className="video-meta-row">
-                                <div className="channel-info" onClick={() => navigate(`/channel/${video.snippet.channelId}`)}>
+                                <div className="channel-info" onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/channel/${video.snippet.channelId}`);
+                                }}>
                                     <ChannelAvatar channelId={video.snippet.channelId} channelTitle={video.snippet.channelTitle} size={40} />
                                     <div className="channel-text">
                                         <h3 className="channel-name">{video.snippet.channelTitle}</h3>
@@ -268,20 +305,20 @@ const VideoPlayer = () => {
                                 </div>
 
                                 <div className="video-actions-row">
-                                    <button className="btn-premium action-btn" onClick={handleShare}>
+                                    <button className="btn-premium action-btn" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
                                         <Share2 size={18} />
                                         <span>Share</span>
                                     </button>
 
                                     <button
                                         className={`btn-premium action-btn ${inWatchLater ? 'active' : ''}`}
-                                        onClick={handleWatchLater}
+                                        onClick={(e) => { e.stopPropagation(); handleWatchLater(); }}
                                     >
                                         <Clock size={18} fill={inWatchLater ? "currentColor" : "none"} />
                                         <span>{inWatchLater ? 'Saved' : 'Watch Later'}</span>
                                     </button>
 
-                                    <button className="btn-premium action-btn" onClick={() => setShowPlaylistModal(true)}>
+                                    <button className="btn-premium action-btn" onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}>
                                         <ListPlus size={18} />
                                         <span>Save</span>
                                     </button>
@@ -305,7 +342,7 @@ const VideoPlayer = () => {
                             <div className="comments-section">
                                 <button
                                     className="comments-header-btn"
-                                    onClick={() => setShowComments(!showComments)}
+                                    onClick={(e) => { e.stopPropagation(); setShowComments(!showComments); }}
                                 >
                                     <h3>{comments.length > 0 ? `${formatNumber(video.statistics.commentCount)} Comments` : 'Comments'}</h3>
                                     <span className={`chevron ${showComments ? 'up' : 'down'}`}>▼</span>
