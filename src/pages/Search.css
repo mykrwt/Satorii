@@ -1,0 +1,219 @@
+.search-page {
+    width: 100%;
+    padding-bottom: 80px;
+}
+
+.search-header-sticky {
+    position: sticky;
+    top: 0;
+    background: rgba(17, 20, 16, 0.95);
+    /* Forest Noir bg */
+    backdrop-filter: blur(10px);
+    padding: 16px 24px;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    padding: 0 16px;
+    height: 44px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-bar-container:focus-within {
+    border-color: var(--accent-secondary);
+    background: var(--bg-secondary);
+    box-shadow: 0 0 0 2px rgba(85, 107, 93, 0.2);
+}
+
+.search-icon-input {
+    color: var(--text-tertiary);
+    margin-right: 12px;
+}
+
+.search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    color: var(--text-primary);
+    outline: none;
+    height: 100%;
+}
+
+.search-input::placeholder {
+    color: var(--text-tertiary);
+}
+
+.clear-input-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-input-btn:hover {
+    color: var(--text-primary);
+}
+
+.search-content {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.search-results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .search-results-grid {
+        gap: 12px;
+    }
+}
+
+/* History & Suggestions */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-left h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.clear-history-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.clear-history-btn:hover {
+    color: var(--text-primary);
+    text-decoration: underline;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-primary);
+}
+
+.history-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.history-icon {
+    color: var(--text-tertiary);
+    margin-right: 16px;
+}
+
+.history-item span {
+    flex: 1;
+    font-size: 14px;
+}
+
+.remove-history-btn {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    padding: 8px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.history-item:hover .remove-history-btn {
+    opacity: 1;
+}
+
+.remove-history-btn:hover {
+    color: var(--accent-primary);
+}
+
+/* Tags Cloud */
+.tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.tag-chip {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tag-chip:hover {
+    background: var(--hover-white);
+    border-color: var(--accent-secondary);
+    color: var(--text-primary);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    color: var(--text-tertiary);
+    gap: 16px;
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+    .search-header-sticky {
+        padding: 12px 16px;
+    }
+
+    .search-content {
+        padding: 16px;
+    }
+}

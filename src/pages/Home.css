@@ -1,0 +1,125 @@
+.home-page {
+    padding-bottom: 80px;
+    position: relative;
+}
+
+.categories-section {
+    position: relative;
+    z-index: 10;
+    background: transparent;
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+}
+
+.categories-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    /* for scrollbar */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.categories-scroll::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.category-chip {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.category-chip:hover {
+    background: var(--hover-white);
+    color: var(--text-primary);
+}
+
+.category-chip.active {
+    background: var(--text-primary);
+    /* White/Light accent */
+    color: #000;
+    font-weight: 600;
+}
+
+/* Videos Section */
+.videos-section {
+    padding: 24px;
+    min-height: 50vh;
+}
+
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px 20px;
+}
+
+.loading-container,
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+    color: var(--text-secondary);
+    gap: 16px;
+}
+
+.error-title {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+    z-index: 50;
+    pointer-events: none;
+}
+
+/* Animation */
+.animate-fade {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .categories-section {
+        padding: 12px 16px;
+    }
+
+    .videos-section {
+        padding: 16px;
+    }
+
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+}
