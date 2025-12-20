@@ -126,21 +126,67 @@
 
 /* Mobile Adjustments */
 @media (max-width: 768px) {
-    .top-bar-center {
-        display: flex;
-        flex: 1;
-        padding: 0 4px;
-        max-width: none;
+    .top-bar {
+        padding: 0 8px;
+        gap: 8px;
+    }
+
+    .top-bar-left {
+        min-width: auto;
+        gap: 4px;
     }
 
     .logo-text {
-        display: block;
-        font-size: 16px;
+        display: none;
+        /* Hide text on mobile to save space */
     }
 
-    .top-bar-left,
+    .logo-icon {
+        height: 24px;
+    }
+
+    .top-bar-center {
+        padding: 0;
+        margin: 0 4px;
+        flex: 1;
+        max-width: none;
+        display: flex;
+    }
+
+    .search-container {
+        height: 36px;
+    }
+
+    .search-input-wrapper {
+        padding: 0 10px;
+    }
+
+    .search-input-wrapper input {
+        font-size: 14px;
+    }
+
+    .search-submit {
+        width: 44px;
+    }
+
     .top-bar-right {
         min-width: auto;
         gap: 4px;
+    }
+
+    .menu-btn {
+        display: none;
+        /* Often hidden on mobile when bottom nav exists, but keep for now if they like it */
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-section {
+        display: none;
+        /* Only show search on tiny screens or hide something else */
+    }
+
+    .top-bar-left {
+        display: none;
     }
 }

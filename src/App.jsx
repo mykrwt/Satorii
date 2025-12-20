@@ -9,6 +9,7 @@ import Library from './pages/Library';
 import Settings from './pages/Settings';
 import SideNav from './components/SideNav';
 import TopBar from './components/TopBar';
+import BottomNav from './components/BottomNav';
 import './App.css';
 
 // Global Player State & Persistent Rendering
@@ -21,12 +22,15 @@ function AppContent() {
 
     // Persistent Player State
     const [activeVideoId, setActiveVideoId] = useState(null);
+    const [miniPlayerClosed, setMiniPlayerClosed] = useState(false);
+
     const isWatchPage = location.pathname.startsWith('/watch/');
     const currentPathVideoId = isWatchPage ? location.pathname.split('/watch/')[1] : null;
 
     useEffect(() => {
         if (currentPathVideoId && currentPathVideoId !== activeVideoId) {
             setActiveVideoId(currentPathVideoId);
+            setMiniPlayerClosed(false); // Reset closed state when a new video starts
         }
     }, [currentPathVideoId, activeVideoId]);
 
@@ -53,7 +57,7 @@ function AppContent() {
     const toggleNav = () => setNavCollapsed(!navCollapsed);
 
     return (
-        <div className={`app-container ${activeVideoId && !isWatchPage ? 'has-mini-player' : ''}`}>
+        <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
             <TopBar toggleNav={toggleNav} />
 
             <div className="app-layout">
@@ -86,11 +90,21 @@ function AppContent() {
             </div>
 
             {/* Global Mini-Player - only shows when playing but NOT on watch page */}
-            {activeVideoId && !isWatchPage && (
+            {activeVideoId && !isWatchPage && !miniPlayerClosed && (
                 <div className="mini-player-dock animate-fade" onClick={() => navigate(`/watch/${activeVideoId}`)}>
-                    <VideoPlayer mini={true} videoId={activeVideoId} />
+                    <VideoPlayer
+                        mini={true}
+                        videoId={activeVideoId}
+                        onClose={(e) => {
+                            e.stopPropagation();
+                            setMiniPlayerClosed(true);
+                            setActiveVideoId(null); // Completely stop if requested, or just hide
+                        }}
+                    />
                 </div>
             )}
+
+            <BottomNav />
         </div>
     );
 }

@@ -11,11 +11,12 @@ import {
     Share2,
     ListPlus,
     MessageSquare,
-    CheckCircle2
+    CheckCircle2,
+    X
 } from 'lucide-react';
 import './VideoPlayer.css';
 
-const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
+const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
     const { videoId: routeVideoId } = useParams();
     const videoId = propVideoId || routeVideoId;
 
@@ -56,6 +57,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
         });
         setIsSubscribed(nowSubscribed);
     };
+
     const [showComments, setShowComments] = useState(false);
     const [error, setError] = useState(null);
 
@@ -75,9 +77,10 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
 
             loadVideoData();
             setInWatchLater(watchLaterService.has(videoId));
-            window.scrollTo(0, 0);
+            // Only scroll to top if not in mini mode
+            if (!mini) window.scrollTo(0, 0);
         }
-    }, [videoId]);
+    }, [videoId, mini]);
 
     const loadVideoData = async () => {
         try {
@@ -163,15 +166,6 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
         }
     };
 
-    if (error) {
-        return (
-            <div className="video-player-page error-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-                <h2>Video Unavailable</h2>
-                <button className="btn-premium" onClick={() => window.location.reload()}>Retry</button>
-            </div>
-        );
-    }
-
     const loadMoreRelated = async () => {
         if (loadingMore || !nextPageToken || !video) return;
 
@@ -212,7 +206,6 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
         if (node) observer.current.observe(node);
     }, [loadingMore, nextPageToken]);
 
-    // ... handleWatchLater, formatNumber same as before ...
     const handleWatchLater = () => {
         if (inWatchLater) {
             watchLaterService.remove(videoId);
@@ -239,6 +232,15 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
         return number.toString();
     };
 
+    if (error) {
+        return (
+            <div className="video-player-page error-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <h2>Video Unavailable</h2>
+                <button className="btn-premium" onClick={() => window.location.reload()}>Retry</button>
+            </div>
+        );
+    }
+
     if (mini) {
         return (
             <div className="mini-player-contents">
@@ -251,8 +253,13 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
                     />
                 </div>
                 <div className="mini-player-info">
-                    <span className="mini-video-title">{video?.snippet?.title || 'Loading...'}</span>
-                    <span className="mini-video-channel">{video?.snippet?.channelTitle}</span>
+                    <div className="mini-text-stack">
+                        <span className="mini-video-title">{video?.snippet?.title || 'Loading...'}</span>
+                        <span className="mini-video-channel">{video?.snippet?.channelTitle}</span>
+                    </div>
+                    <button className="mini-close-btn" onClick={onClose}>
+                        <X size={20} />
+                    </button>
                 </div>
             </div>
         );

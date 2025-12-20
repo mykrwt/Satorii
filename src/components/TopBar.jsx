@@ -26,7 +26,7 @@ const TopBar = ({ toggleNav }) => {
                 <button className="btn-icon menu-btn" onClick={toggleNav}>
                     <Menu size={22} />
                 </button>
-                <div className="logo-section desktop-only" onClick={() => navigate('/')}>
+                <div className="logo-section" onClick={() => navigate('/')}>
                     <img src="/satorii.png" alt="Satorii" className="logo-icon" />
                     <span className="logo-text">Satorii</span>
                 </div>
