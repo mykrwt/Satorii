@@ -9,7 +9,6 @@ import Library from './pages/Library';
 import Settings from './pages/Settings';
 import SideNav from './components/SideNav';
 import TopBar from './components/TopBar';
-import BottomNav from './components/BottomNav';
 import './App.css';
 
 // Global Player State & Persistent Rendering
@@ -103,8 +102,6 @@ function AppContent() {
                     />
                 </div>
             )}
-
-            <BottomNav />
         </div>
     );
 }
