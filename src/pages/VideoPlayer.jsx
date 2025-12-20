@@ -114,15 +114,28 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                         ]
                     });
 
-                    // Keep handlers active
+                    // AUDIO SYNC HACK:
+                    // When the video starts, we trigger the silent audio keep-alive 
+                    // and link it to the MediaSession to prevent Android from killing the process.
+                    const startBackgroundAudio = () => {
+                        const audio = window.keepAliveAudio;
+                        if (audio) {
+                            audio.play().catch(e => console.log("Audio start blocked:", e));
+                        }
+                    };
+
                     navigator.mediaSession.setActionHandler('play', () => {
                         const iframe = document.querySelector('iframe');
                         iframe?.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                        window.keepAliveAudio?.play();
                     });
                     navigator.mediaSession.setActionHandler('pause', () => {
                         const iframe = document.querySelector('iframe');
                         iframe?.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                        window.keepAliveAudio?.pause();
                     });
+
+                    startBackgroundAudio();
                 }
 
                 historyService.add({

@@ -13,23 +13,26 @@
   <link rel="apple-touch-icon" href="/satorii.png">
   <title>Satorii</title>
   <script>
-    // SPOOF VISIBILITY: Trick YouTube into thinking the page is always visible
+    // SPOOF VISIBILITY: Keep YouTube thinking we are always active
     Object.defineProperty(document, 'visibilityState', { get: () => 'visible', configurable: true });
     Object.defineProperty(document, 'hidden', { get: () => false, configurable: true });
 
-    // BLOCK EVENTS: Prevent visibilitychange events from pausing the player
     window.addEventListener('visibilitychange', (e) => {
       e.stopImmediatePropagation();
     }, true);
 
-    // AUDIO KEEP-ALIVE: Pro trick to force Android to keep the media thread active
-    // This silent audio loop ensures the OS doesn't kill the background process
-    const keepAlive = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhAAQACABAAAABkYXRhAgAAAAEA');
-    keepAlive.loop = true;
+    // PRO BACKGROUND SYNC: Silent Audio Keep-Alive
+    // Using a tiny silent WAV file to keep the OS media thread alive
+    const silentWav = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhAAQACABAAAABkYXRhAgAAAAEA';
+    window.keepAliveAudio = new Audio(silentWav);
+    window.keepAliveAudio.loop = true;
 
-    // Start keep-alive on first interaction
+    // Most browsers block audio until a click
     window.addEventListener('click', () => {
-      keepAlive.play().catch(() => { });
+      window.keepAliveAudio.play().then(() => {
+        // Pause immediately - it's just to "warm up" the audio engine
+        window.keepAliveAudio.pause();
+      }).catch(() => { });
     }, { once: true });
   </script>
 </head>
