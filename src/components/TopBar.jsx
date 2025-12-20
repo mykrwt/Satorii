@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Menu, Bell, Settings, X } from 'lucide-react';
+import { Search, Menu, Settings, X } from 'lucide-react';
 import './TopBar.css';
 
 const TopBar = ({ toggleNav }) => {

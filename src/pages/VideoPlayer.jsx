@@ -97,7 +97,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId }) => {
                     const icon = await youtubeAPI.getChannelIcon(currentVideo.snippet.channelId);
                     setChannelIcon(icon || '');
                 } catch (err) {
-                    console.log("Could not fetch channel icon for sub");
+                    // Silently fail if icon not found
                 }
 
                 // Media Session API for Background Play/Controls

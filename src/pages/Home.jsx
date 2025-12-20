@@ -90,44 +90,8 @@ const Home = () => {
             setNextPageToken(trendingData.nextPageToken);
 
         } catch (err) {
-            console.error('Home feed failed, using fallback:', err);
-
-            // Premium Mock Data for UI Verification
-            const thumbnails = [
-                'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=80', // Abstract Fluid
-                'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=800&q=80', // Mountain
-                'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80', // Tech
-                'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80', // Gaming
-            ];
-
-            const titles = [
-                'Ambient Interface Design Process - 2025',
-                'Exploring the Swiss Alps in 4K HDR',
-                'Building a Quantum Computer in my Garage',
-                'Cyberpunk 2077: Ray Tracing Overdrive Gameplay',
-                'The Future of AI Agents: Deepmind Documentary',
-                'Lofi Hip Hop Radio - Beats to Relax/Study to',
-                'Minimalist Desk Setup Tour 2024',
-                'How to Center a Div (The Final Tutorial)'
-            ];
-
-            const channels = ['Satorii Design', 'Travel Logs', 'Tech Vision', 'GamerHub', 'DeepCode', 'Lofi Girl', 'Setup Wars', 'Web Dev'];
-
-            const mockVideos = Array(12).fill(null).map((_, i) => ({
-                id: `mock-${i}`,
-                snippet: {
-                    title: titles[i % titles.length],
-                    channelTitle: channels[i % channels.length],
-                    publishedAt: new Date(Date.now() - i * 86400000).toISOString(),
-                    thumbnails: {
-                        medium: { url: thumbnails[i % thumbnails.length] }
-                    },
-                    channelId: 'mock-channel'
-                },
-                contentDetails: { duration: 'PT15M30S' },
-                statistics: { viewCount: (Math.random() * 5000000).toFixed(0), commentCount: '500' }
-            }));
-            setVideos(mockVideos);
+            console.error('Home feed failed:', err);
+            setError('Unable to load trending videos. Check your connection.');
         } finally {
             setInitialLoading(false);
         }

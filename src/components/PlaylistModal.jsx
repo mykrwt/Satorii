@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { youtubeAPI } from '../services/youtube';
 import { playlistService } from '../services/storage';
 import { X, Link as LinkIcon, Download, Loader2, CheckCircle2, AlertCircle, PlusCircle } from 'lucide-react';
-import './PlaylistImportModal.css';
+import './PlaylistModal.css';
 
 const PlaylistModal = ({ onClose, onImportSuccess }) => {
     const [mode, setMode] = useState('import'); // 'import' or 'create'

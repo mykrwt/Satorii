@@ -12,7 +12,7 @@ import {
     Plus
 } from 'lucide-react';
 import { playlistService, subscriptionService } from '../services/storage';
-import PlaylistModal from './PlaylistImportModal';
+import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
 const SideNav = ({ collapsed, toggleNav }) => {
