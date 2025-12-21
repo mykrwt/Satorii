@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { youtubeAPI } from '../services/youtube';
 import { playlistService, watchLaterService } from '../services/storage';
-import { Play, ListVideo, Film } from 'lucide-react';
+import { Play, ListVideo, Film, Shuffle, Trash2 } from 'lucide-react';
 import './Playlist.css';
 
 import VideoCard from '../components/VideoCard';
@@ -13,6 +13,7 @@ const Playlist = () => {
     const [playlist, setPlaylist] = useState(null);
     const [videos, setVideos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         loadPlaylist();
@@ -107,6 +108,32 @@ const Playlist = () => {
         }
     };
 
+    const deletePlaylist = () => {
+        if (playlistId === 'later') return; // Cannot delete Watch Later
+        
+        playlistService.delete(playlistId);
+        navigate('/'); // Redirect to home
+    };
+
+    const playShuffled = () => {
+        if (videos.length <= 1) {
+            playPlaylist(0);
+            return;
+        }
+        
+        const shuffled = [...videos].sort(() => Math.random() - 0.5);
+        const randomIndex = Math.floor(Math.random() * shuffled.length);
+        
+        try {
+            window.keepAliveAudio?.play?.().catch(() => { });
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+            }
+        } catch { }
+
+        navigate(`/watch/${shuffled[randomIndex].id}`);
+    };
+
     if (loading) return <div className="loading-container"><div className="spinner"></div></div>;
 
     if (!playlist) return <div className="error-container">Playlist not found</div>;
@@ -138,6 +165,27 @@ const Playlist = () => {
                         <button className="btn-premium filled" onClick={() => playPlaylist(0)}>
                             <Play size={18} fill="currentColor" /> Play All
                         </button>
+                        {videos.length > 1 && (
+                            <button className="btn-premium filled" onClick={playShuffled}>
+                                <Shuffle size={18} /> Shuffle
+                            </button>
+                        )}
+                        {playlist.type !== 'system' && (
+                            <>
+                                <button className="btn-premium danger" onClick={() => setShowDeleteConfirm(true)}>
+                                    <Trash2 size={18} /> Delete
+                                </button>
+                                {showDeleteConfirm && (
+                                    <div className="delete-confirm-dialog">
+                                        <p>Are you sure you want to delete this playlist?</p>
+                                        <div className="confirm-actions">
+                                            <button onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                                            <button onClick={deletePlaylist}>Delete</button>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
