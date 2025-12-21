@@ -5,6 +5,7 @@ import { historyService, watchLaterService, subscriptionService } from '../servi
 import VideoCard from '../components/VideoCard';
 import ChannelAvatar from '../components/ChannelAvatar';
 import AddToPlaylistModal from '../components/AddToPlaylistModal';
+import { filterOutShorts, isYouTubeShort } from '../utils/videoFilters';
 import {
     Clock,
     Share2,
@@ -94,6 +95,18 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
 
             if (videoData.items && videoData.items.length > 0) {
                 currentVideo = videoData.items[0];
+
+                if (isYouTubeShort(currentVideo)) {
+                    setError('YouTube Shorts are not supported in this app.');
+                    try {
+                        window.keepAliveAudio?.pause?.();
+                        if ('mediaSession' in navigator) {
+                            navigator.mediaSession.playbackState = 'none';
+                        }
+                    } catch { }
+                    return;
+                }
+
                 setVideo(currentVideo);
                 setIsSubscribed(subscriptionService.isSubscribed(currentVideo.snippet.channelId));
 
@@ -179,7 +192,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                             if (enriched.items?.length > 0) items = enriched.items;
                         }
                     }
-                    setRelatedVideos(items);
+                    setRelatedVideos(filterOutShorts(items));
                     setNextPageToken(relatedData.nextPageToken);
                 } catch (err) { console.warn("Related fetch error", err); }
 
@@ -216,7 +229,8 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                 }
             }
 
-            setRelatedVideos(prev => [...prev, ...items]);
+            const filtered = filterOutShorts(items);
+            setRelatedVideos(prev => [...prev, ...filtered]);
             setNextPageToken(data.nextPageToken);
         } catch (err) {
             console.error("Error loading more related:", err);
@@ -266,9 +280,13 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
 
     if (error) {
         return (
-            <div className="video-player-page error-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <div className="video-player-page error-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', gap: '12px' }}>
                 <h2>Video Unavailable</h2>
-                <button className="btn-premium" onClick={() => window.location.reload()}>Retry</button>
+                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', maxWidth: '520px', lineHeight: '1.5' }}>{error}</p>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button className="btn-premium filled" onClick={() => navigate('/')}>Go Home</button>
+                    <button className="btn-premium" onClick={() => window.location.reload()}>Retry</button>
+                </div>
             </div>
         );
     }

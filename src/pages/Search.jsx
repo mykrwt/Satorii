@@ -4,6 +4,7 @@ import { youtubeAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import { searchHistoryService } from '../services/storage';
 import { generateRelatedTags } from '../utils/searchHelpers';
+import { filterOutShorts } from '../utils/videoFilters';
 import { Search as SearchIcon, X, Clock, History, TrendingUp, Sparkles } from 'lucide-react';
 import './Search.css';
 
@@ -96,7 +97,10 @@ const Search = () => {
                         };
                     }).filter(Boolean);
 
-                    console.log(`📝 Final enriched results count: ${finalItems.length}`);
+                    const filteredItems = filterOutShorts(finalItems);
+                    console.log(`📝 Final enriched results count (shorts removed): ${filteredItems.length}`);
+
+                    finalItems = filteredItems;
 
                     // Generate Related Tags only if we have items
                     const generatedTags = generateRelatedTags(finalItems, query);
@@ -170,8 +174,9 @@ const Search = () => {
                     };
                 }).filter(Boolean);
 
-                console.log(`📝 Adding ${newItems.length} enriched items to results`);
-                setResults(prev => [...prev, ...newItems]);
+                const filteredItems = filterOutShorts(newItems);
+                console.log(`📝 Adding ${filteredItems.length} enriched items to results (shorts removed)`);
+                setResults(prev => [...prev, ...filteredItems]);
                 setNextPageToken(searchData.nextPageToken);
             }
         } catch (err) {
