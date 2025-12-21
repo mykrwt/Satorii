@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Menu, X } from 'lucide-react';
+import { youtubeAPI } from '../services/youtube';
 import './TopBar.css';
 
 const TopBar = ({ toggleNav }) => {
