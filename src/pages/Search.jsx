@@ -48,53 +48,65 @@ const Search = () => {
             }
 
             try {
+                console.log(`🔍 Starting search for: "${query}"`);
+
                 // 1. Basic Search - this is our fallback source
                 const searchData = await youtubeAPI.search(query, 'video', 20);
-                
+                console.log(`📊 Search API response:`, searchData);
+
                 let finalItems = [];
                 let token = searchData.nextPageToken || null;
-                
+
                 if (searchData.items && searchData.items.length > 0) {
                     token = searchData.nextPageToken;
-                    
+                    console.log(`🎬 Found ${searchData.items.length} items`);
+
                     // 2. Extract IDs for enrichment
                     const videoIds = searchData.items
                         .map(item => item.id?.videoId)
                         .filter(Boolean);
-                    
+
+                    console.log(`🔑 Extracted ${videoIds.length} video IDs for enrichment`);
+
                     // 3. Enrich with details (View counts, durations) if we have IDs
                     let detailsData = { items: [] };
                     if (videoIds.length > 0) {
                         try {
                             detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                            console.log(`✨ Enriched ${detailsData.items?.length || 0} videos with details`);
                         } catch (enrichErr) {
-                            console.warn("Enrichment failed, using basic results", enrichErr);
+                            console.warn("⚠️ Enrichment failed, using basic results", enrichErr);
                         }
                     }
-                    
+
                     // 4. Merge or Fallback - most robust pattern
                     finalItems = searchData.items.map((item, index) => {
                         const vidId = item.id?.videoId;
                         const detailedItem = detailsData.items?.find(d => d.id === vidId);
-                        
+
                         // Return enriched if available, otherwise transform basic result
                         return detailedItem || {
                             ...item,
                             id: vidId || item.id
                         };
                     });
-                    
+
+                    console.log(`📝 Final results count: ${finalItems.length}`);
+
                     // Generate Related Tags only if we have items
                     const generatedTags = generateRelatedTags(finalItems, query);
                     setRelatedTags(generatedTags);
+                } else {
+                    console.log(`❌ No items found in search response`);
                 }
-                
+
                 // Always set results, even if empty array (shows "No results"
                 setResults(finalItems);
                 setNextPageToken(token);
+                console.log(`✅ Search completed for: "${query}"`);
 
             } catch (err) {
-                console.error("Search failed:", err);
+                console.error("💥 Search failed:", err);
                 setError("Something went wrong. Please try again.");
                 // Ensure we show empty results, not a blank screen
                 setResults([]);
@@ -112,10 +124,12 @@ const Search = () => {
     const loadMore = async () => {
         if (isLoadingMore || !nextPageToken) return;
 
+        console.log(`📜 Loading more results for: "${query}"`);
         setIsLoadingMore(true);
         try {
             const searchData = await youtubeAPI.search(query, 'video', 20, nextPageToken);
-            
+            console.log(`📊 Load more response: ${searchData.items?.length || 0} items`);
+
             if (searchData.items && searchData.items.length > 0) {
                 let newItems = [];
                 const videoIds = searchData.items
@@ -127,25 +141,27 @@ const Search = () => {
                 if (videoIds.length > 0) {
                     try {
                         detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                        console.log(`✨ Load more enriched ${detailsData.items?.length || 0} videos`);
                     } catch (err) {
-                        console.warn("Load more enrichment failed", err);
+                        console.warn("⚠️ Load more enrichment failed", err);
                     }
                 }
 
                 newItems = searchData.items.map(item => {
                     const vidId = item.id?.videoId;
                     const detailedItem = detailsData.items?.find(d => d.id === vidId);
-                    return detailedItem || { 
-                        ...item, 
-                        id: vidId || item.id 
+                    return detailedItem || {
+                        ...item,
+                        id: vidId || item.id
                     };
                 });
 
+                console.log(`📝 Adding ${newItems.length} new items to results`);
                 setResults(prev => [...prev, ...newItems]);
                 setNextPageToken(searchData.nextPageToken);
             }
         } catch (err) {
-            console.error("Load more failed:", err);
+            console.error("💥 Load more failed:", err);
         } finally {
             setIsLoadingMore(false);
         }
@@ -200,7 +216,10 @@ const Search = () => {
                 {/* 2. Error State */}
                 {!isSearching && error && (
                     <div className="error-state">
+                        <SearchIcon size={48} className="error-icon" />
+                        <h3>Search Error</h3>
                         <p>{error}</p>
+                        <p>We're having trouble connecting to the search service.</p>
                         <button onClick={() => window.location.reload()}>Try Again</button>
                     </div>
                 )}
@@ -217,8 +236,8 @@ const Search = () => {
                                 </div>
                                 <div className="related-chips">
                                     {relatedTags.map((tag, idx) => (
-                                        <button 
-                                            key={idx} 
+                                        <button
+                                            key={idx}
                                             className="related-chip"
                                             onClick={() => handleTagClick(tag)}
                                         >
@@ -234,7 +253,7 @@ const Search = () => {
                             <div className="search-results-grid">
                                 {results.map((item, index) => {
                                     if (!item) return null;
-                                    
+
                                     // Generate stable key
                                     const videoId = item.id?.videoId || (typeof item.id === 'string' ? item.id : null);
                                     const key = videoId ? `${videoId}-${index}` : `item-${index}`;
@@ -248,7 +267,7 @@ const Search = () => {
                                     }
                                     return <VideoCard key={key} video={item} displayType="list" />;
                                 })}
-                                
+
                                 {isLoadingMore && (
                                     <div className="loading-more">
                                         <div className="spinner-small"></div>
@@ -258,8 +277,23 @@ const Search = () => {
                         ) : (
                             <div className="empty-state">
                                 <SearchIcon size={48} className="empty-icon" />
-                                <h3>No results found</h3>
+                                <h3>No results found for "{query}"</h3>
                                 <p>Try checking your spelling or use different keywords</p>
+                                <div className="suggestions-section">
+                                    <h4>Suggestions:</h4>
+                                    <ul>
+                                        <li>Make sure all words are spelled correctly</li>
+                                        <li>Try different keywords</li>
+                                        <li>Try more general keywords</li>
+                                        <li>Try fewer keywords</li>
+                                    </ul>
+                                </div>
+                                <button
+                                    className="try-again-btn"
+                                    onClick={() => window.location.reload()}
+                                >
+                                    Try Again
+                                </button>
                             </div>
                         )}
                     </>
