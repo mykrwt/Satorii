@@ -73,14 +73,19 @@ const Search = () => {
 
             if (videoIds.length > 0) {
                 // 3. ENRICH: Fetch FULL details
+                let enrichmentSuccess = false;
                 try {
                     const detailedData = await youtubeAPI.getVideosByIds(videoIds);
                     if (detailedData.items && detailedData.items.length > 0) {
                         finalItems = detailedData.items;
+                        enrichmentSuccess = true;
                     }
                 } catch (enrichError) {
                     console.warn('Video enrichment failed, using basic results:', enrichError);
-                    // Fallback to basic items if enrichment fails - transform to match expected structure
+                }
+
+                if (!enrichmentSuccess) {
+                    // Fallback to basic items if enrichment fails (or returns empty items) - transform to match expected structure
                     finalItems = basicItems.map(item => {
                         const videoId = item.id?.videoId || item.id;
                         // Create a structure that VideoCard expects
@@ -151,14 +156,17 @@ const Search = () => {
                 ) : query ? (
                     <div className="search-results-grid">
                         {results.map((item, index) => {
+                            const videoId = typeof item.id === 'string' ? item.id : item.id?.videoId;
+                            const uniqueKey = videoId ? `${videoId}-${index}` : `search-result-${index}`;
+
                             if (index === results.length - 1) {
                                 return (
-                                    <div ref={lastResultRef} key={item.id + index}>
+                                    <div ref={lastResultRef} key={uniqueKey}>
                                         <VideoCard video={item} displayType="list" />
                                     </div>
                                 );
                             } else {
-                                return <VideoCard key={item.id + index} video={item} displayType="list" />;
+                                return <VideoCard key={uniqueKey} video={item} displayType="list" />;
                             }
                         })}
 
