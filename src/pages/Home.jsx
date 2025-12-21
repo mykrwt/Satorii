@@ -83,8 +83,13 @@ const Home = () => {
             let trendingData;
             try {
                 trendingData = await youtubeAPI.getTrending('US', 20);
+                
+                // If service caught an error, it returns empty items. Treat this as failure to trigger fallback.
+                if (!trendingData?.items || trendingData.items.length === 0) {
+                     throw new Error('Trending API returned empty items');
+                }
             } catch (trendingErr) {
-                console.warn('Trending API failed, trying fallback search:', trendingErr);
+                console.warn('Trending API failed or empty, trying fallback search:', trendingErr);
                 // Fallback: try to get popular videos via search
                 try {
                     trendingData = await youtubeAPI.search('popular videos', 'video', 20);
