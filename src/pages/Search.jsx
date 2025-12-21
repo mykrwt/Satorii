@@ -58,34 +58,45 @@ const Search = () => {
                 if (searchData.items && searchData.items.length > 0) {
                     console.log(`🎬 Found ${searchData.items.length} items`);
 
-                    // Extract and format video items correctly
-                    finalItems = searchData.items.map((item, index) => {
-                        // Extract videoId correctly from YouTube search response
-                        const videoId = item.id?.videoId;
+                    // Get all video IDs to fetch detailed info (views, duration, etc.)
+                    const videoIds = searchData.items.map(item => item.id?.videoId).filter(Boolean);
 
-                        if (!videoId) {
-                            console.warn(`Skipping item ${index} - no videoId found:`, item);
-                            return null;
+                    let detailedItems = [];
+                    if (videoIds.length > 0) {
+                        try {
+                            const detailedData = await youtubeAPI.getVideosByIds(videoIds);
+                            detailedItems = detailedData.items || [];
+                            console.log(`📊 Fetched detailed info for ${detailedItems.length} videos`);
+                        } catch (detailErr) {
+                            console.warn("Failed to fetch detailed video info, falling back to search snippet info", detailErr);
                         }
+                    }
+
+                    // Map detailed items if available, otherwise fallback to search items
+                    finalItems = searchData.items.map((item, index) => {
+                        const videoId = item.id?.videoId;
+                        if (!videoId) return null;
+
+                        // Find detailed item
+                        const detailedItem = detailedItems.find(v => v.id === videoId);
+                        const baseItem = detailedItem || item;
 
                         // Return a clean, properly structured video object
                         return {
                             id: videoId,
                             snippet: {
-                                title: item.snippet?.title || 'Untitled Video',
-                                channelTitle: item.snippet?.channelTitle || 'Unknown Channel',
-                                channelId: item.snippet?.channelId,
-                                publishedAt: item.snippet?.publishedAt,
-                                thumbnails: item.snippet?.thumbnails || {}
+                                title: baseItem.snippet?.title || item.snippet?.title || 'Untitled Video',
+                                channelTitle: baseItem.snippet?.channelTitle || item.snippet?.channelTitle || 'Unknown Channel',
+                                channelId: baseItem.snippet?.channelId || item.snippet?.channelId,
+                                publishedAt: baseItem.snippet?.publishedAt || item.snippet?.publishedAt,
+                                thumbnails: baseItem.snippet?.thumbnails || item.snippet?.thumbnails || {}
                             },
-                            // Include other fields if available
-                            ...(item.contentDetails && { contentDetails: item.contentDetails }),
-                            ...(item.statistics && { statistics: item.statistics })
+                            contentDetails: baseItem.contentDetails,
+                            statistics: baseItem.statistics
                         };
-                    }).filter(Boolean); // Remove null items
+                    }).filter(Boolean);
 
-                    console.log(`📝 Final results count: ${finalItems.length}`);
-                    console.log(`✅ Sample result:`, finalItems[0]);
+                    console.log(`📝 Final enriched results count: ${finalItems.length}`);
 
                     // Generate Related Tags only if we have items
                     const generatedTags = generateRelatedTags(finalItems, query);
@@ -125,30 +136,41 @@ const Search = () => {
             console.log(`📊 Load more response: ${searchData.items?.length || 0} items`);
 
             if (searchData.items && searchData.items.length > 0) {
-                // Use same robust transformation as main search
-                const newItems = searchData.items.map((item, index) => {
-                    const videoId = item.id?.videoId;
+                // Enrich load more items as well
+                const videoIds = searchData.items.map(item => item.id?.videoId).filter(Boolean);
 
-                    if (!videoId) {
-                        console.warn(`Load more: Skipping item ${index} - no videoId found`);
-                        return null;
+                let detailedItems = [];
+                if (videoIds.length > 0) {
+                    try {
+                        const detailedData = await youtubeAPI.getVideosByIds(videoIds);
+                        detailedItems = detailedData.items || [];
+                    } catch (err) {
+                        console.warn("Failed to fetch detailed info for more videos", err);
                     }
+                }
+
+                const newItems = searchData.items.map((item) => {
+                    const videoId = item.id?.videoId;
+                    if (!videoId) return null;
+
+                    const detailedItem = detailedItems.find(v => v.id === videoId);
+                    const baseItem = detailedItem || item;
 
                     return {
                         id: videoId,
                         snippet: {
-                            title: item.snippet?.title || 'Untitled Video',
-                            channelTitle: item.snippet?.channelTitle || 'Unknown Channel',
-                            channelId: item.snippet?.channelId,
-                            publishedAt: item.snippet?.publishedAt,
-                            thumbnails: item.snippet?.thumbnails || {}
+                            title: baseItem.snippet?.title || item.snippet?.title || 'Untitled Video',
+                            channelTitle: baseItem.snippet?.channelTitle || item.snippet?.channelTitle || 'Unknown Channel',
+                            channelId: baseItem.snippet?.channelId || item.snippet?.channelId,
+                            publishedAt: baseItem.snippet?.publishedAt || item.snippet?.publishedAt,
+                            thumbnails: baseItem.snippet?.thumbnails || item.snippet?.thumbnails || {}
                         },
-                        ...(item.contentDetails && { contentDetails: item.contentDetails }),
-                        ...(item.statistics && { statistics: item.statistics })
+                        contentDetails: baseItem.contentDetails,
+                        statistics: baseItem.statistics
                     };
                 }).filter(Boolean);
 
-                console.log(`📝 Adding ${newItems.length} new items to results`);
+                console.log(`📝 Adding ${newItems.length} enriched items to results`);
                 setResults(prev => [...prev, ...newItems]);
                 setNextPageToken(searchData.nextPageToken);
             }

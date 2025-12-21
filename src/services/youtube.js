@@ -471,6 +471,32 @@ export const youtubeAPI = {
         }
     },
 
+    // 🔍 YouTube Search Suggestions (Autocomplete)
+    getSearchSuggestions: async (query) => {
+        if (!query || query.trim().length === 0) return [];
+
+        try {
+            // Using the public suggestqueries endpoint
+            // Note: This endpoint is technically JSONP but axios handles the string response
+            const response = await axios.get(`https://suggestqueries.google.com/complete/search?client=youtube&ds=yt&q=${encodeURIComponent(query)}`);
+
+            // The response format is window.google.ac.h(["query", [["suggestion1", 0], ["suggestion2", 0]]])
+            // We need to extract the suggestions array
+            const dataStr = response.data;
+            const match = dataStr.match(/\((.*)\)/);
+            if (match && match[1]) {
+                const parsed = JSON.parse(match[1]);
+                if (Array.isArray(parsed) && parsed[1]) {
+                    return parsed[1].map(item => item[0]);
+                }
+            }
+            return [];
+        } catch (error) {
+            console.warn('Autocomplete fetch failed:', error);
+            return [];
+        }
+    },
+
     // Extract playlist ID from URL
     extractPlaylistId: (url) => {
         const patterns = [
