@@ -7,6 +7,7 @@ import Channel from './pages/Channel';
 import Playlist from './pages/Playlist';
 import Library from './pages/Library';
 import Settings from './pages/Settings';
+import HardTestSearch from './pages/HardTestSearch';
 import SideNav from './components/SideNav';
 import TopBar from './components/TopBar';
 import './App.css';
@@ -82,6 +83,7 @@ function AppContent() {
                             <Route path="/playlist/:playlistId" element={<Playlist />} />
                             <Route path="/library" element={<Library />} />
                             <Route path="/settings" element={<Settings />} />
+                            <Route path="/hard-test-search" element={<HardTestSearch />} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </div>
