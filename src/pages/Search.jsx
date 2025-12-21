@@ -39,7 +39,7 @@ const Search = () => {
             setIsSearching(true);
             setError(null);
             setNextPageToken(null);
-            setResults([]);
+            // DON'T clear results - we'll set them at the end to prevent flicker
             
             // Save to history
             if (!searchHistoryService.get().includes(query)) {
@@ -48,12 +48,12 @@ const Search = () => {
             }
 
             try {
-                // 1. Basic Search
+                // 1. Basic Search - this is our fallback source
                 const searchData = await youtubeAPI.search(query, 'video', 20);
                 
                 let finalItems = [];
-                let token = null;
-
+                let token = searchData.nextPageToken || null;
+                
                 if (searchData.items && searchData.items.length > 0) {
                     token = searchData.nextPageToken;
                     
@@ -62,46 +62,48 @@ const Search = () => {
                         .map(item => item.id?.videoId)
                         .filter(Boolean);
                     
-                    // 3. Enrich with details (View counts, durations)
-                    try {
-                        const detailsData = await youtubeAPI.getVideosByIds(videoIds);
-                        const detailsMap = new Map(
-                            (detailsData.items || []).map(item => [item.id, item])
-                        );
-
-                        finalItems = searchData.items.map(item => {
-                            const vidId = item.id?.videoId;
-                            const detailed = detailsMap.get(vidId);
-                            // Use detailed if available, else fallback to search item with flattened ID
-                            return detailed || { ...item, id: vidId || item.id };
-                        });
-                    } catch (enrichErr) {
-                        console.warn("Enrichment failed, using basic results", enrichErr);
-                        finalItems = searchData.items.map(item => ({
-                            ...item,
-                            id: item.id?.videoId || item.id
-                        }));
+                    // 3. Enrich with details (View counts, durations) if we have IDs
+                    let detailsData = { items: [] };
+                    if (videoIds.length > 0) {
+                        try {
+                            detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                        } catch (enrichErr) {
+                            console.warn("Enrichment failed, using basic results", enrichErr);
+                        }
                     }
                     
-                    // Generate Related Tags
+                    // 4. Merge or Fallback - most robust pattern
+                    finalItems = searchData.items.map((item, index) => {
+                        const vidId = item.id?.videoId;
+                        const detailedItem = detailsData.items?.find(d => d.id === vidId);
+                        
+                        // Return enriched if available, otherwise transform basic result
+                        return detailedItem || {
+                            ...item,
+                            id: vidId || item.id
+                        };
+                    });
+                    
+                    // Generate Related Tags only if we have items
                     const generatedTags = generateRelatedTags(finalItems, query);
                     setRelatedTags(generatedTags);
                 }
-
+                
+                // Always set results, even if empty array (shows "No results"
                 setResults(finalItems);
                 setNextPageToken(token);
 
             } catch (err) {
                 console.error("Search failed:", err);
                 setError("Something went wrong. Please try again.");
+                // Ensure we show empty results, not a blank screen
+                setResults([]);
             } finally {
                 setIsSearching(false);
             }
         };
 
         executeSearch();
-        
-        // Scroll to top
         window.scrollTo(0, 0);
 
     }, [query]);
@@ -115,29 +117,29 @@ const Search = () => {
             const searchData = await youtubeAPI.search(query, 'video', 20, nextPageToken);
             
             if (searchData.items && searchData.items.length > 0) {
-                let newItems = searchData.items;
+                let newItems = [];
                 const videoIds = searchData.items
                     .map(item => item.id?.videoId)
                     .filter(Boolean);
 
-                try {
-                    const detailsData = await youtubeAPI.getVideosByIds(videoIds);
-                    const detailsMap = new Map(
-                        (detailsData.items || []).map(item => [item.id, item])
-                    );
-
-                    newItems = searchData.items.map(item => {
-                        const vidId = item.id?.videoId;
-                        const detailed = detailsMap.get(vidId);
-                        return detailed || { ...item, id: vidId || item.id };
-                    });
-                } catch (err) {
-                    console.warn("Load more enrichment failed", err);
-                    newItems = searchData.items.map(item => ({
-                        ...item,
-                        id: item.id?.videoId || item.id
-                    }));
+                // Enrich or fallback - same robust pattern as main search
+                let detailsData = { items: [] };
+                if (videoIds.length > 0) {
+                    try {
+                        detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                    } catch (err) {
+                        console.warn("Load more enrichment failed", err);
+                    }
                 }
+
+                newItems = searchData.items.map(item => {
+                    const vidId = item.id?.videoId;
+                    const detailedItem = detailsData.items?.find(d => d.id === vidId);
+                    return detailedItem || { 
+                        ...item, 
+                        id: vidId || item.id 
+                    };
+                });
 
                 setResults(prev => [...prev, ...newItems]);
                 setNextPageToken(searchData.nextPageToken);
