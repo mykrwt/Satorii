@@ -298,8 +298,14 @@ input:checked+.slider:before {
 }
 
 .btn-premium.danger {
-    background: #ff4444;
+    background: var(--danger);
     color: white;
+    border: 1px solid var(--danger);
+}
+
+.btn-premium.danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
 }
 
 @media (max-width: 768px) {

@@ -129,16 +129,16 @@
 /* Updated always dark color */
 .show-more-subs {
     margin-top: 4px;
-    background: #0a0c0a !important;
-    /* Force darker than nav buttons */
+    background: var(--bg-secondary) !important;
+    /* Use theme variable instead of hardcoded color */
     border: 1px solid var(--border-color);
     color: var(--text-secondary);
 }
 
 .show-more-subs:hover {
-    background: #000000 !important;
+    background: var(--bg-tertiary) !important;
     color: var(--text-primary);
-    border-color: var(--accent-muted);
+    border-color: var(--accent-secondary);
 }
 
 .mini-btn {

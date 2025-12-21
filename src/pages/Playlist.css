@@ -83,7 +83,7 @@
 }
 
 .playlist-item-wrapper:hover {
-    background: var(--hover-white);
+    background: rgba(222, 209, 189, 0.1);
     border-radius: var(--radius-md);
 }
 
@@ -195,15 +195,15 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 500;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-full);
     transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
 }
 
 .btn-premium.filled:hover {
-    background: var(--accent-primary-hover);
-    border-color: var(--accent-primary-hover);
+    background: var(--accent-secondary);
+    border-color: var(--accent-secondary);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(37, 157, 96, 0.2);
 }
@@ -218,7 +218,7 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 500;
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-full);
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
