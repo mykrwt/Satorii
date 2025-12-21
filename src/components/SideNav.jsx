@@ -40,6 +40,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
 
     const navItems = [
         { path: '/', icon: Home, label: 'Home' },
+        { path: '/search', icon: Search, label: 'Search' },
     ];
 
     const secondaryItems = [

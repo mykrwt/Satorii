@@ -70,6 +70,7 @@ export const youtubeAPI = {
         if (cached) return cached;
 
         try {
+            console.log(`🔎 YouTube API Search: query="${query}", type="${type}", maxResults=${maxResults}`);
             const response = await api.get('/search', {
                 params: {
                     part: 'snippet',
@@ -80,10 +81,18 @@ export const youtubeAPI = {
                     order: 'relevance',
                 },
             });
+            console.log(`📊 YouTube API Search Response: ${response.data.items?.length || 0} items, nextPageToken: ${response.data.nextPageToken || 'none'}`);
             setCache(cacheKey, response.data);
             return response.data;
         } catch (error) {
-            console.error('Search error:', error);
+            console.error('💥 YouTube API Search Error:', error);
+            if (error.response) {
+                console.error('📋 Error details:', {
+                    status: error.response.status,
+                    data: error.response.data,
+                    headers: error.response.headers
+                });
+            }
             // Return empty structure instead of throwing to prevent crashes
             return { items: [], nextPageToken: null };
         }
@@ -352,15 +361,23 @@ export const youtubeAPI = {
     getVideosByIds: async (videoIds) => {
         // No caching for batch yet or per-id caching could be complex, simple fetch for now
         try {
+            console.log(`🔍 YouTube API Batch Details: ${videoIds.length} video IDs`);
             const response = await api.get('/videos', {
                 params: {
                     part: 'snippet,contentDetails,statistics',
                     id: videoIds.join(','),
                 },
             });
+            console.log(`📊 YouTube API Batch Response: ${response.data.items?.length || 0} items`);
             return response.data;
         } catch (error) {
-            console.error('Batch video details fetch failed:', error);
+            console.error('💥 YouTube API Batch Details Error:', error);
+            if (error.response) {
+                console.error('📋 Batch error details:', {
+                    status: error.response.status,
+                    data: error.response.data
+                });
+            }
             return { items: [] };
         }
     },
