@@ -4,7 +4,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: env(safe-area-inset-top) 16px 0 16px;
+    padding-top: env(safe-area-inset-top);
+    padding-left: calc(16px + env(safe-area-inset-left));
+    padding-right: calc(16px + env(safe-area-inset-right));
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -33,7 +35,7 @@
 @media (max-width: 1024px) {
     .menu-btn-mobile {
         display: flex;
-        margin-right: 8px;
+        margin-right: 12px;
     }
 
     .mobile-hidden {
@@ -144,11 +146,15 @@
 /* Mobile Adjustments */
 @media (max-width: 768px) {
     .top-bar {
-        padding: env(safe-area-inset-top) 12px 0 12px;
+        padding-top: env(safe-area-inset-top);
+        padding-left: calc(12px + env(safe-area-inset-left));
+        padding-right: calc(12px + env(safe-area-inset-right));
     }
 
     .search-container {
         height: 38px;
+        flex: 1; /* Allow it to shrink/grow properly */
+        width: auto; /* Override width: 100% */
     }
 
     .search-input-wrapper {
