@@ -98,6 +98,14 @@ function AppContent() {
                             e.stopPropagation();
                             setMiniPlayerClosed(true);
                             setActiveVideoId(null); // Completely stop if requested, or just hide
+
+                            try {
+                                window.keepAliveAudio?.pause?.();
+                                if ('mediaSession' in navigator) {
+                                    navigator.mediaSession.playbackState = 'none';
+                                    navigator.mediaSession.metadata = null;
+                                }
+                            } catch { }
                         }}
                     />
                 </div>

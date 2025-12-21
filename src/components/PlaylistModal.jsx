@@ -12,13 +12,17 @@ const PlaylistModal = ({ onClose, onImportSuccess }) => {
     const [status, setStatus] = useState('idle'); // idle, loading, success, error
     const [errorMsg, setErrorMsg] = useState('');
 
-    const extractPlaylistId = (link) => {
-        try {
-            const urlObj = new URL(link);
-            return urlObj.searchParams.get('list');
-        } catch (e) {
-            return null;
-        }
+    const extractPlaylistId = (input) => {
+        const trimmed = input.trim();
+        if (!trimmed) return null;
+
+        const fromUrl = youtubeAPI.extractPlaylistId(trimmed);
+        if (fromUrl) return fromUrl;
+
+        // Allow pasting just the playlist ID (e.g. PLxxxx...)
+        if (/^[A-Za-z0-9_-]{10,}$/.test(trimmed)) return trimmed;
+
+        return null;
     };
 
     const handleAction = async (e) => {
@@ -40,13 +44,27 @@ const PlaylistModal = ({ onClose, onImportSuccess }) => {
                 const data = await youtubeAPI.getPlaylistDetails(playlistId);
                 if (!data.items || data.items.length === 0) throw new Error('Playlist not found');
                 const ytPlaylist = data.items[0];
-                const itemsData = await youtubeAPI.getPlaylistItems(playlistId, 50);
-                const videoItems = itemsData.items || [];
+
+                // Import all items (pagination), with a safety cap.
+                const videoItems = [];
+                let pageToken = null;
+                const maxItems = 500;
+
+                do {
+                    const itemsData = await youtubeAPI.getPlaylistItems(playlistId, 50, pageToken);
+                    if (itemsData.items?.length) {
+                        videoItems.push(...itemsData.items);
+                    }
+                    pageToken = itemsData.nextPageToken;
+                } while (pageToken && videoItems.length < maxItems);
 
                 const newLocalPlaylist = playlistService.create(ytPlaylist.snippet.title, ytPlaylist.snippet.description);
                 videoItems.forEach(item => {
+                    const id = item.snippet?.resourceId?.videoId;
+                    if (!id) return;
+
                     playlistService.addVideo(newLocalPlaylist.id, {
-                        id: item.snippet.resourceId.videoId,
+                        id,
                         title: item.snippet.title,
                         thumbnail: item.snippet.thumbnails?.medium?.url || '',
                         channelTitle: item.snippet.videoOwnerChannelTitle || '',
@@ -102,8 +120,28 @@ const PlaylistModal = ({ onClose, onImportSuccess }) => {
                 </div>
 
                 <div className="playlist-modal-tabs">
-                    <button type="button" className={mode === 'import' ? 'active' : ''} onClick={() => setMode('import')}>Import from YT</button>
-                    <button type="button" className={mode === 'create' ? 'active' : ''} onClick={() => setMode('create')}>Create New</button>
+                    <button
+                        type="button"
+                        className={mode === 'import' ? 'active' : ''}
+                        onClick={() => {
+                            setMode('import');
+                            setStatus('idle');
+                            setErrorMsg('');
+                        }}
+                    >
+                        Import from YT
+                    </button>
+                    <button
+                        type="button"
+                        className={mode === 'create' ? 'active' : ''}
+                        onClick={() => {
+                            setMode('create');
+                            setStatus('idle');
+                            setErrorMsg('');
+                        }}
+                    >
+                        Create New
+                    </button>
                 </div>
 
                 <div className="import-modal-body">

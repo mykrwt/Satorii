@@ -7,11 +7,10 @@ import { Search as SearchIcon, X, Clock, History, TrendingUp } from 'lucide-reac
 import './Search.css';
 
 const Search = () => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const query = searchParams.get('q');
 
-    const [searchInput, setSearchInput] = useState(query || '');
     const [results, setResults] = useState([]);
 
     // Loading State
@@ -28,7 +27,6 @@ const Search = () => {
 
     useEffect(() => {
         if (query) {
-            setSearchInput(query);
             // New search: reset everything
             setResults([]);
             setNextPageToken(null);
@@ -115,13 +113,6 @@ const Search = () => {
         if (node) observer.current.observe(node);
     }, [initialLoading, loadingMore, nextPageToken]);
 
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (searchInput.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchInput)}`);
-        }
-    };
 
     const clearHistory = () => {
         searchHistoryService.clear();
