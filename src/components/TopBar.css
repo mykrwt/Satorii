@@ -83,7 +83,8 @@
     align-items: center;
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
-    border-radius: 40px;
+    border-right: none;
+    border-radius: 40px 0 0 40px;
     padding: 0 16px;
     transition: all 0.2s;
 }
@@ -102,6 +103,7 @@
     font-size: 16px;
     outline: none;
     padding-left: 8px;
+    border-radius: 40px 0 0 40px;
 }
 
 .search-icon-focused {
@@ -122,13 +124,19 @@
     width: 64px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-color);
+    border-left: none;
     border-radius: 0 40px 40px 0;
     color: var(--text-primary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    transition: background 0.2s, border-color 0.2s;
+    margin-left: -1px;
+}
+
+.search-container.focused .search-submit {
+    border-color: var(--accent-secondary);
 }
 
 .search-submit:hover {
