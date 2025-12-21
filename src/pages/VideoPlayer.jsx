@@ -11,8 +11,7 @@ import {
     Share2,
     ListPlus,
     MessageSquare,
-    X,
-    PictureInPicture
+    X
 } from 'lucide-react';
 import './VideoPlayer.css';
 
@@ -118,7 +117,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                     // Silently fail if icon not found
                 }
 
-                // Media Session API for Background Play/Controls
+                // Media Session API for Background Play/Controls - Enhanced Spotify-like experience
                 if ('mediaSession' in navigator && 'MediaMetadata' in window) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: currentVideo.snippet.title,
@@ -142,32 +141,72 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                         }
                     };
 
+                    // Enhanced background audio handling for Spotify-like experience
                     const startBackgroundAudio = () => {
                         const audio = window.keepAliveAudio;
                         if (!audio) return;
-                        audio.play().catch(() => { });
-                        navigator.mediaSession.playbackState = 'playing';
+                        
+                        // Set audio properties for better background playback
+                        audio.volume = 0; // Keep it silent but alive
+                        audio.loop = true;
+                        
+                        // Try to play and maintain playback state
+                        audio.play().then(() => {
+                            navigator.mediaSession.playbackState = 'playing';
+                            console.log('Background audio started successfully');
+                        }).catch((error) => {
+                            console.log('Background audio blocked by browser:', error);
+                            navigator.mediaSession.playbackState = 'paused';
+                        });
                     };
 
                     setHandler('play', () => {
                         sendPlayerCommand('playVideo');
-                        window.keepAliveAudio?.play?.().catch(() => { });
+                        if (window.keepAliveAudio) {
+                            window.keepAliveAudio.play().catch(() => { });
+                        }
                         navigator.mediaSession.playbackState = 'playing';
+                        console.log('Play command received - video playing in background');
                     });
 
                     setHandler('pause', () => {
                         sendPlayerCommand('pauseVideo');
-                        window.keepAliveAudio?.pause?.();
+                        if (window.keepAliveAudio) {
+                            window.keepAliveAudio.pause();
+                        }
                         navigator.mediaSession.playbackState = 'paused';
+                        console.log('Pause command received');
                     });
 
                     setHandler('stop', () => {
                         sendPlayerCommand('pauseVideo');
-                        window.keepAliveAudio?.pause?.();
+                        if (window.keepAliveAudio) {
+                            window.keepAliveAudio.pause();
+                        }
                         navigator.mediaSession.playbackState = 'none';
+                        console.log('Stop command received');
                     });
 
+                    // Initialize background audio immediately
                     startBackgroundAudio();
+
+                    // Add visibility change handler to maintain audio during app switching
+                    const handleVisibilityChange = () => {
+                        if (document.visibilityState === 'hidden') {
+                            // App went to background - ensure audio keeps playing
+                            if (window.keepAliveAudio && window.keepAliveAudio.paused) {
+                                window.keepAliveAudio.play().catch(() => { });
+                            }
+                            navigator.mediaSession.playbackState = 'playing';
+                        }
+                    };
+
+                    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+                    // Cleanup visibility change handler when component unmounts
+                    return () => {
+                        document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    };
                 }
 
                 historyService.add({
@@ -297,10 +336,10 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                 <div className="mini-player-iframe">
                     <iframe
                         ref={iframeRef}
-                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=1&loop=0&playlist=${videoId}`}
                         title="Video Player"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; background-playback"
                     />
                 </div>
                 <div className="mini-player-info">
@@ -323,10 +362,10 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                     <div className="player-wrapper">
                         <iframe
                             ref={iframeRef}
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=1&loop=0&playlist=${videoId}`}
                             title={video?.snippet?.title || "Video Player"}
                             frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; background-playback"
                             allowFullScreen
                         ></iframe>
                         <button
@@ -382,23 +421,6 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                                     >
                                         <Clock size={18} fill={inWatchLater ? "currentColor" : "none"} />
                                         <span>{inWatchLater ? 'Saved' : 'Watch Later'}</span>
-                                    </button>
-
-                                    <button
-                                        className="btn-premium action-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (document.pictureInPictureElement) {
-                                                document.exitPictureInPicture();
-                                            } else if (iframeRef.current) {
-                                                // Note: Standard iframe doesn't support requestPictureInPicture directly easily without hacky workarounds or API
-                                                // But we can trigger it if the browser supports it for the video element inside
-                                                alert("To use PiP, please right-click the video (twice) and select 'Picture in Picture'");
-                                            }
-                                        }}
-                                    >
-                                        <PictureInPicture size={18} />
-                                        <span>PiP</span>
                                     </button>
 
                                     <button className="btn-premium action-btn" onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}>
