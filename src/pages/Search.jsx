@@ -48,20 +48,49 @@ const Search = () => {
             }
 
             try {
-                // Optimized Search: Single API call, no enrichment
-                const data = await youtubeAPI.search(query, 'video', 20);
+                // 1. Basic Search
+                const searchData = await youtubeAPI.search(query, 'video', 20);
                 
-                if (data.items) {
-                    setResults(data.items);
+                let finalItems = [];
+                let token = null;
+
+                if (searchData.items && searchData.items.length > 0) {
+                    token = searchData.nextPageToken;
                     
-                    // Generate Related Tags from the results titles locally (0 API cost)
-                    const generatedTags = generateRelatedTags(data.items, query);
+                    // 2. Extract IDs for enrichment
+                    const videoIds = searchData.items
+                        .map(item => item.id?.videoId)
+                        .filter(Boolean);
+                    
+                    // 3. Enrich with details (View counts, durations)
+                    try {
+                        const detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                        const detailsMap = new Map(
+                            (detailsData.items || []).map(item => [item.id, item])
+                        );
+
+                        finalItems = searchData.items.map(item => {
+                            const vidId = item.id?.videoId;
+                            const detailed = detailsMap.get(vidId);
+                            // Use detailed if available, else fallback to search item with flattened ID
+                            return detailed || { ...item, id: vidId || item.id };
+                        });
+                    } catch (enrichErr) {
+                        console.warn("Enrichment failed, using basic results", enrichErr);
+                        finalItems = searchData.items.map(item => ({
+                            ...item,
+                            id: item.id?.videoId || item.id
+                        }));
+                    }
+                    
+                    // Generate Related Tags
+                    const generatedTags = generateRelatedTags(finalItems, query);
                     setRelatedTags(generatedTags);
-                    
-                    setNextPageToken(data.nextPageToken);
-                } else {
-                    setResults([]);
                 }
+
+                setResults(finalItems);
+                setNextPageToken(token);
+
             } catch (err) {
                 console.error("Search failed:", err);
                 setError("Something went wrong. Please try again.");
@@ -83,10 +112,35 @@ const Search = () => {
 
         setIsLoadingMore(true);
         try {
-            const data = await youtubeAPI.search(query, 'video', 20, nextPageToken);
-            if (data.items) {
-                setResults(prev => [...prev, ...data.items]);
-                setNextPageToken(data.nextPageToken);
+            const searchData = await youtubeAPI.search(query, 'video', 20, nextPageToken);
+            
+            if (searchData.items && searchData.items.length > 0) {
+                let newItems = searchData.items;
+                const videoIds = searchData.items
+                    .map(item => item.id?.videoId)
+                    .filter(Boolean);
+
+                try {
+                    const detailsData = await youtubeAPI.getVideosByIds(videoIds);
+                    const detailsMap = new Map(
+                        (detailsData.items || []).map(item => [item.id, item])
+                    );
+
+                    newItems = searchData.items.map(item => {
+                        const vidId = item.id?.videoId;
+                        const detailed = detailsMap.get(vidId);
+                        return detailed || { ...item, id: vidId || item.id };
+                    });
+                } catch (err) {
+                    console.warn("Load more enrichment failed", err);
+                    newItems = searchData.items.map(item => ({
+                        ...item,
+                        id: item.id?.videoId || item.id
+                    }));
+                }
+
+                setResults(prev => [...prev, ...newItems]);
+                setNextPageToken(searchData.nextPageToken);
             }
         } catch (err) {
             console.error("Load more failed:", err);
