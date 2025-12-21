@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { youtubeAPI } from '../services/youtube';
 import { playlistService } from '../services/storage';
 import { X, Link as LinkIcon, Download, Loader2, CheckCircle2, AlertCircle, PlusCircle } from 'lucide-react';
@@ -106,7 +107,7 @@ const PlaylistModal = ({ onClose, onImportSuccess }) => {
         }
     };
 
-    return (
+    const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="import-modal-content animate-fade" onClick={e => e.stopPropagation()}>
                 <div className="import-modal-header">
@@ -179,6 +180,8 @@ const PlaylistModal = ({ onClose, onImportSuccess }) => {
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 };
 
 export default PlaylistModal;
