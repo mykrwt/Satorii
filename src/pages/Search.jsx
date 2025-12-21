@@ -273,7 +273,9 @@ const Search = () => {
                                     }
 
                                     // Generate stable key using the video ID
-                                    const key = `${item.id}-${index}`;
+                                    // item.id could be a string or an object like {videoId: '...'}
+                                    const videoId = typeof item.id === 'string' ? item.id : item.id?.videoId;
+                                    const key = `${videoId}-${index}`;
 
                                     if (index === results.length - 1) {
                                         return (
