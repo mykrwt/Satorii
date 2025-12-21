@@ -11,6 +11,7 @@ const TopBar = ({ toggleNav }) => {
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
+    const [isFocused, setIsFocused] = useState(false);
 
     useEffect(() => {
         if (location.pathname === '/search') {
