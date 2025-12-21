@@ -84,7 +84,8 @@ export const youtubeAPI = {
             return response.data;
         } catch (error) {
             console.error('Search error:', error);
-            throw error;
+            // Return empty structure instead of throwing to prevent crashes
+            return { items: [], nextPageToken: null };
         }
     },
 
@@ -151,7 +152,8 @@ export const youtubeAPI = {
             return response.data;
         } catch (error) {
             console.error('Get trending error:', error);
-            throw error;
+            // Return empty structure instead of throwing to prevent crashes
+            return { items: [], nextPageToken: null };
         }
     },
 
@@ -287,7 +289,8 @@ export const youtubeAPI = {
             return response.data;
         } catch (error) {
             console.error('Get videos by category error:', error);
-            throw error;
+            // Return empty structure instead of throwing to prevent crashes
+            return { items: [], nextPageToken: null };
         }
     },
 

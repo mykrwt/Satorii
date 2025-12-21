@@ -79,15 +79,52 @@ const Home = () => {
                 // Continue without categories
             }
 
-            // 2. Fetch Trending (Critical)
-            const trendingData = await youtubeAPI.getTrending('US', 20);
-            const validVideos = filterVideos(trendingData.items);
+            // 2. Fetch Trending (Critical) - with robust fallback
+            let trendingData;
+            try {
+                trendingData = await youtubeAPI.getTrending('US', 20);
+            } catch (trendingErr) {
+                console.warn('Trending API failed, trying fallback search:', trendingErr);
+                // Fallback: try to get popular videos via search
+                try {
+                    trendingData = await youtubeAPI.search('popular videos', 'video', 20);
+                } catch (searchErr) {
+                    console.error('Both trending and fallback search failed:', searchErr);
+                    trendingData = { items: [] };
+                }
+            }
+
+            // Robust data transformation with fallback
+            let validVideos = [];
+            if (trendingData?.items && trendingData.items.length > 0) {
+                // Transform search results if needed (similar to Search.jsx pattern)
+                const transformedItems = trendingData.items.map(item => {
+                    // If item.id is an object with videoId (from search), transform it
+                    if (item.id?.videoId && typeof item.id === 'object') {
+                        return {
+                            ...item,
+                            id: item.id.videoId
+                        };
+                    }
+                    // If item.id is already a string (from videos endpoint), keep as is
+                    return item;
+                }).filter(item => item && item.id); // Filter out invalid items
+
+                validVideos = filterVideos(transformedItems);
+            }
 
             // Prefetch icons prevents cascading 20 requests
-            await fetchChannelIcons(validVideos);
+            if (validVideos.length > 0) {
+                await fetchChannelIcons(validVideos);
+            }
 
             setVideos(validVideos);
-            setNextPageToken(trendingData.nextPageToken);
+            setNextPageToken(trendingData?.nextPageToken);
+
+            // Show error if no videos loaded
+            if (validVideos.length === 0) {
+                setError('No videos available at the moment. Please try again later.');
+            }
 
         } catch (err) {
             console.error('Home feed failed:', err);
@@ -103,15 +140,47 @@ const Home = () => {
             if (!token) setInitialLoading(true);
 
             let data;
-            if (categoryId) {
-                data = await youtubeAPI.getVideosByCategory(categoryId, 'US', 20, token);
-            } else {
-                data = await youtubeAPI.getTrending('US', 20, token);
+            try {
+                if (categoryId) {
+                    data = await youtubeAPI.getVideosByCategory(categoryId, 'US', 20, token);
+                } else {
+                    data = await youtubeAPI.getTrending('US', 20, token);
+                }
+            } catch (apiErr) {
+                console.warn('Primary API failed, trying fallback search:', apiErr);
+                // Fallback to search for both categories and trending
+                try {
+                    const searchQuery = categoryId ? `category ${categoryId}` : 'trending videos';
+                    data = await youtubeAPI.search(searchQuery, 'video', 20, token);
+                } catch (searchErr) {
+                    console.error('Both primary and fallback APIs failed:', searchErr);
+                    data = { items: [] };
+                }
             }
 
-            const newVideos = filterVideos(data.items);
+            // Robust data transformation with fallback
+            let newVideos = [];
+            if (data?.items && data.items.length > 0) {
+                // Transform search results if needed (similar to Search.jsx pattern)
+                const transformedItems = data.items.map(item => {
+                    // If item.id is an object with videoId (from search), transform it
+                    if (item.id?.videoId && typeof item.id === 'object') {
+                        return {
+                            ...item,
+                            id: item.id.videoId
+                        };
+                    }
+                    // If item.id is already a string (from videos endpoint), keep as is
+                    return item;
+                }).filter(item => item && item.id); // Filter out invalid items
 
-            await fetchChannelIcons(newVideos);
+                newVideos = filterVideos(transformedItems);
+            }
+
+            // Prefetch icons if we have videos
+            if (newVideos.length > 0) {
+                await fetchChannelIcons(newVideos);
+            }
 
             if (token) {
                 setVideos(prev => [...prev, ...newVideos]);
@@ -119,13 +188,21 @@ const Home = () => {
             } else {
                 setVideos(newVideos);
                 setInitialLoading(false);
+                
+                // Show error if no videos loaded
+                if (newVideos.length === 0) {
+                    setError('No videos available for this category. Please try again later.');
+                }
             }
 
-            setNextPageToken(data.nextPageToken);
+            setNextPageToken(data?.nextPageToken);
 
         } catch (err) {
             console.error("Load videos error", err);
-            if (!token) setInitialLoading(false);
+            if (!token) {
+                setInitialLoading(false);
+                setError('Failed to load videos. Please try again.');
+            }
             if (token) setLoadingMore(false);
         }
     };
@@ -150,8 +227,15 @@ const Home = () => {
     }, [initialLoading, loadingMore, nextPageToken]);
 
 
-    // Removed initial loading screen as requested
-
+    // Show loading state to prevent black screen
+    if (initialLoading) {
+        return (
+            <div className="loading-container">
+                <div className="spinner"></div>
+                <p>Loading trending videos...</p>
+            </div>
+        );
+    }
 
     if (error) {
         return (
@@ -189,19 +273,28 @@ const Home = () => {
 
             <div className="videos-section">
                 <div className="video-grid">
-                    {videos.map((video, index) => {
+                    {videos.filter(video => video && video.id).map((video, index) => {
+                        const videoId = typeof video.id === 'string' ? video.id : video.id?.videoId;
                         if (index === videos.length - 1) {
                             return (
-                                <div ref={lastVideoRef} key={video.id + index}>
+                                <div ref={lastVideoRef} key={`${videoId || 'unknown'}-${index}`}>
                                     <VideoCard video={video} />
                                 </div>
                             );
                         } else {
-                            return <VideoCard key={video.id + index} video={video} />;
+                            return <VideoCard key={`${videoId || 'unknown'}-${index}`} video={video} />;
                         }
                     })}
                 </div>
                 {loadingMore && <div className="spinner-small" style={{ margin: '40px auto' }}></div>}
+                
+                {/* Show message if no videos after filtering */}
+                {videos.length === 0 && !initialLoading && !error && (
+                    <div className="loading-container">
+                        <p>No videos found</p>
+                        <button className="btn-premium" onClick={() => window.location.reload()}>Refresh</button>
+                    </div>
+                )}
             </div>
         </div>
     );
