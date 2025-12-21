@@ -89,7 +89,7 @@ const Search = () => {
                             ...item,
                             id: vidId || item.id
                         };
-                    });
+                    }).filter(Boolean); // Remove any null/undefined items that might crash VideoCard
 
                     console.log(`📝 Final results count: ${finalItems.length}`);
 
@@ -154,7 +154,7 @@ const Search = () => {
                         ...item,
                         id: vidId || item.id
                     };
-                });
+                }).filter(Boolean); // Filter out invalid items that might crash VideoCard
 
                 console.log(`📝 Adding ${newItems.length} new items to results`);
                 setResults(prev => [...prev, ...newItems]);

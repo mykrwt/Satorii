@@ -14,6 +14,13 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
 
     if (!video) return null;
 
+    // Safely access video properties with defaults
+    const snippet = video.snippet || {};
+    const thumbnails = snippet.thumbnails || {};
+    const contentDetails = video.contentDetails || {};
+    const statistics = video.statistics || {};
+    const videoId = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
+
     const formatDuration = (duration) => {
         if (!duration) return '';
         const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
@@ -63,8 +70,6 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
     };
 
     const handleClick = () => {
-        // Robust ID handling
-        const videoId = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
         if (videoId) {
             // User-gesture: kickstart keep-alive audio so MediaSession can show OS controls/notification.
             try {
@@ -138,18 +143,18 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
         }
     };
 
-    const thumbnail = video.snippet?.thumbnails?.maxres?.url ||
-        video.snippet?.thumbnails?.standard?.url ||
-        video.snippet?.thumbnails?.high?.url ||
-        video.snippet?.thumbnails?.medium?.url ||
-        video.snippet?.thumbnails?.default?.url;
+    const thumbnail = thumbnails.maxres?.url ||
+        thumbnails.standard?.url ||
+        thumbnails.high?.url ||
+        thumbnails.medium?.url ||
+        thumbnails.default?.url;
 
-    const duration = video.contentDetails?.duration;
-    const views = video.statistics?.viewCount;
-    const publishedAt = video.snippet?.publishedAt;
-    const title = video.snippet?.title || 'Untitled Video';
-    const channelTitle = video.snippet?.channelTitle || 'Unknown Channel';
-    const videoIdForPreview = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
+    const duration = contentDetails.duration;
+    const views = statistics.viewCount;
+    const publishedAt = snippet.publishedAt;
+    const title = snippet.title || 'Untitled Video';
+    const channelTitle = snippet.channelTitle || 'Unknown Channel';
+    const videoIdForPreview = videoId;
 
     return (
         <>
