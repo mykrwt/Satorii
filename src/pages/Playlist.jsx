@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { youtubeAPI } from '../services/youtube';
-import { playlistService, watchLaterService, likeService } from '../services/storage';
-import { Play, Shuffle, MoreVertical, Trash2, ArrowLeft, Clock, ListVideo, Film } from 'lucide-react';
+import { playlistService, watchLaterService } from '../services/storage';
+import { Play, ListVideo, Film } from 'lucide-react';
 import './Playlist.css';
 
 import VideoCard from '../components/VideoCard';
@@ -96,6 +96,13 @@ const Playlist = () => {
 
     const playPlaylist = (index = 0) => {
         if (videos.length > 0) {
+            try {
+                window.keepAliveAudio?.play?.().catch(() => { });
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            } catch { }
+
             navigate(`/watch/${videos[index].id}`);
         }
     };

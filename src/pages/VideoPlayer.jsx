@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { youtubeAPI } from '../services/youtube';
-import { historyService, watchLaterService, playlistService, likeService, subscriptionService } from '../services/storage';
+import { historyService, watchLaterService, subscriptionService } from '../services/storage';
 import VideoCard from '../components/VideoCard';
 import ChannelAvatar from '../components/ChannelAvatar';
 import AddToPlaylistModal from '../components/AddToPlaylistModal';
 import {
-    ArrowLeft,
     Clock,
     Share2,
     ListPlus,
     MessageSquare,
-    CheckCircle2,
     X
 } from 'lucide-react';
 import './VideoPlayer.css';
@@ -66,6 +64,8 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const observer = useRef();
 
+    const iframeRef = useRef(null);
+
     useEffect(() => {
         if (videoId) {
             setVideo(null);
@@ -104,7 +104,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                 }
 
                 // Media Session API for Background Play/Controls
-                if ('mediaSession' in navigator) {
+                if ('mediaSession' in navigator && 'MediaMetadata' in window) {
                     navigator.mediaSession.metadata = new MediaMetadata({
                         title: currentVideo.snippet.title,
                         artist: currentVideo.snippet.channelTitle,
@@ -114,25 +114,42 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                         ]
                     });
 
-                    // AUDIO SYNC HACK:
-                    // When the video starts, we trigger the silent audio keep-alive 
-                    // and link it to the MediaSession to prevent Android from killing the process.
-                    const startBackgroundAudio = () => {
-                        const audio = window.keepAliveAudio;
-                        if (audio) {
-                            audio.play().catch(e => console.log("Audio start blocked:", e));
+                    const sendPlayerCommand = (func) => {
+                        const iframe = iframeRef.current;
+                        iframe?.contentWindow?.postMessage(`{"event":"command","func":"${func}","args":""}`, '*');
+                    };
+
+                    const setHandler = (action, handler) => {
+                        try {
+                            navigator.mediaSession.setActionHandler(action, handler);
+                        } catch {
+                            // Some browsers throw for unsupported actions
                         }
                     };
 
-                    navigator.mediaSession.setActionHandler('play', () => {
-                        const iframe = document.querySelector('iframe');
-                        iframe?.contentWindow?.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                        window.keepAliveAudio?.play();
+                    const startBackgroundAudio = () => {
+                        const audio = window.keepAliveAudio;
+                        if (!audio) return;
+                        audio.play().catch(() => { });
+                        navigator.mediaSession.playbackState = 'playing';
+                    };
+
+                    setHandler('play', () => {
+                        sendPlayerCommand('playVideo');
+                        window.keepAliveAudio?.play?.().catch(() => { });
+                        navigator.mediaSession.playbackState = 'playing';
                     });
-                    navigator.mediaSession.setActionHandler('pause', () => {
-                        const iframe = document.querySelector('iframe');
-                        iframe?.contentWindow?.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                        window.keepAliveAudio?.pause();
+
+                    setHandler('pause', () => {
+                        sendPlayerCommand('pauseVideo');
+                        window.keepAliveAudio?.pause?.();
+                        navigator.mediaSession.playbackState = 'paused';
+                    });
+
+                    setHandler('stop', () => {
+                        sendPlayerCommand('pauseVideo');
+                        window.keepAliveAudio?.pause?.();
+                        navigator.mediaSession.playbackState = 'none';
                     });
 
                     startBackgroundAudio();
@@ -259,7 +276,8 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
             <div className="mini-player-contents">
                 <div className="mini-player-iframe">
                     <iframe
-                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
+                        ref={iframeRef}
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
                         title="Video Player"
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -284,7 +302,8 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                 <div className="player-container">
                     <div className="player-wrapper">
                         <iframe
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
+                            ref={iframeRef}
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
                             title="Video Player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

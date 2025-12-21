@@ -61,6 +61,14 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
         // Robust ID handling
         const videoId = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
         if (videoId) {
+            // User-gesture: kickstart keep-alive audio so MediaSession can show OS controls/notification.
+            try {
+                window.keepAliveAudio?.play?.().catch(() => { });
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            } catch { }
+
             navigate(`/watch/${videoId}`);
         } else {
             console.warn('VideoCard: No valid video ID found', video);

@@ -26,6 +26,7 @@
     const silentWav = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhAAQACABAAAABkYXRhAgAAAAEA';
     window.keepAliveAudio = new Audio(silentWav);
     window.keepAliveAudio.loop = true;
+    window.keepAliveAudio.volume = 0;
 
     // Most browsers block audio until a click
     window.addEventListener('click', () => {

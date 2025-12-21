@@ -6,7 +6,6 @@ import {
     History,
     Menu,
     Clock,
-    Tv2,
     ListVideo,
     Plus,
     Settings
@@ -41,6 +40,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
 
     const navItems = [
         { path: '/', icon: Home, label: 'Home' },
+        { path: '/search', icon: Search, label: 'Search' },
     ];
 
     const secondaryItems = [
@@ -53,6 +53,12 @@ const SideNav = ({ collapsed, toggleNav }) => {
     const displayedSubs = expandedSubs ? subscriptions : subscriptions.slice(0, 4);
 
     const [showImportModal, setShowImportModal] = useState(false);
+
+    const handleNavItemClick = () => {
+        if (window.innerWidth < 1024 && !collapsed) {
+            toggleNav();
+        }
+    };
 
     return (
         <nav className={`side-nav ${collapsed ? 'collapsed' : ''}`}>
@@ -73,6 +79,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={handleNavItemClick}
                         className={({ isActive }) =>
                             `nav-item ${isActive ? 'active' : ''}`
                         }
@@ -90,6 +97,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                     <NavLink
                         key={item.path}
                         to={item.path}
+                        onClick={handleNavItemClick}
                         className={({ isActive }) =>
                             `nav-item ${isActive ? 'active' : ''}`
                         }
@@ -109,6 +117,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                         <NavLink
                             key={sub.id}
                             to={`/channel/${sub.id}`}
+                            onClick={handleNavItemClick}
                             className={({ isActive }) =>
                                 `nav-item ${isActive ? 'active' : ''}`
                             }
@@ -141,7 +150,14 @@ const SideNav = ({ collapsed, toggleNav }) => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '12px' }}>
                     {!collapsed && <h4 className="nav-section-title">Playlists</h4>}
                     {!collapsed && (
-                        <button className="btn-icon mini-btn" title="Import from YT" onClick={() => setShowImportModal(true)}>
+                        <button
+                            className="btn-icon mini-btn"
+                            title="Import from YT"
+                            onClick={() => {
+                                setShowImportModal(true);
+                                if (window.innerWidth < 1024) toggleNav();
+                            }}
+                        >
                             <Plus size={16} />
                         </button>
                     )}
@@ -150,6 +166,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                     <NavLink
                         key={playlist.id}
                         to={`/playlist/${playlist.id}`}
+                        onClick={handleNavItemClick}
                         className={({ isActive }) =>
                             `nav-item ${isActive ? 'active' : ''}`
                         }

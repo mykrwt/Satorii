@@ -1,13 +1,20 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Menu, Settings, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, Menu, X } from 'lucide-react';
 import './TopBar.css';
 
 const TopBar = ({ toggleNav }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [searchParams] = useSearchParams();
     const [searchInput, setSearchInput] = useState(searchParams.get('q') || '');
     const [isFocused, setIsFocused] = useState(false);
+
+    useEffect(() => {
+        if (location.pathname === '/search') {
+            setSearchInput(searchParams.get('q') || '');
+        }
+    }, [location.pathname, searchParams]);
 
     const handleSearch = (e) => {
         e.preventDefault();
