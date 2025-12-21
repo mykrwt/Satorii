@@ -39,7 +39,6 @@ const Search = () => {
             setIsSearching(true);
             setError(null);
             setNextPageToken(null);
-            // DON'T clear results - we'll set them at the end to prevent flicker
             
             // Save to history
             if (!searchHistoryService.get().includes(query)) {
@@ -50,56 +49,43 @@ const Search = () => {
             try {
                 console.log(`🔍 Starting search for: "${query}"`);
 
-                // 1. Basic Search - this is our fallback source
+                // Simple, direct search call
                 const searchData = await youtubeAPI.search(query, 'video', 20);
                 console.log(`📊 Search API response:`, searchData);
 
                 let finalItems = [];
-                let token = searchData.nextPageToken || null;
-
+                
                 if (searchData.items && searchData.items.length > 0) {
-                    token = searchData.nextPageToken;
                     console.log(`🎬 Found ${searchData.items.length} items`);
-
-                    // 2. Extract IDs for enrichment
-                    const videoIds = searchData.items
-                        .map(item => item.id?.videoId)
-                        .filter(Boolean);
-
-                    console.log(`🔑 Extracted ${videoIds.length} video IDs for enrichment`);
-
-                    // 3. Enrich with details (View counts, durations) if we have IDs
-                    let detailsData = { items: [] };
-                    if (videoIds.length > 0) {
-                        try {
-                            detailsData = await youtubeAPI.getVideosByIds(videoIds);
-                            console.log(`✨ Enriched ${detailsData.items?.length || 0} videos with details`);
-                        } catch (enrichErr) {
-                            console.warn("⚠️ Enrichment failed, using basic results", enrichErr);
-                        }
-                    }
-
-                    // 4. Merge or Fallback - most robust pattern
+                    
+                    // Extract and format video items correctly
                     finalItems = searchData.items.map((item, index) => {
-                        const vidId = item.id?.videoId;
-                        const detailedItem = detailsData.items?.find(d => d.id === vidId);
-
-                        // Return enriched if available, otherwise transform basic result
-                        const result = detailedItem || {
-                            ...item,
-                            id: vidId || item.id
-                        };
+                        // Extract videoId correctly from YouTube search response
+                        const videoId = item.id?.videoId;
                         
-                        // Enhanced safety: Ensure we have required fields
-                        if (!result || !result.id) {
-                            console.warn(`Skipping invalid result at index ${index}`);
+                        if (!videoId) {
+                            console.warn(`Skipping item ${index} - no videoId found:`, item);
                             return null;
                         }
                         
-                        return result;
-                    }).filter(Boolean); // Remove any null/undefined items that might crash VideoCard
+                        // Return a clean, properly structured video object
+                        return {
+                            id: videoId,
+                            snippet: {
+                                title: item.snippet?.title || 'Untitled Video',
+                                channelTitle: item.snippet?.channelTitle || 'Unknown Channel',
+                                channelId: item.snippet?.channelId,
+                                publishedAt: item.snippet?.publishedAt,
+                                thumbnails: item.snippet?.thumbnails || {}
+                            },
+                            // Include other fields if available
+                            ...(item.contentDetails && { contentDetails: item.contentDetails }),
+                            ...(item.statistics && { statistics: item.statistics })
+                        };
+                    }).filter(Boolean); // Remove null items
 
                     console.log(`📝 Final results count: ${finalItems.length}`);
+                    console.log(`✅ Sample result:`, finalItems[0]);
 
                     // Generate Related Tags only if we have items
                     const generatedTags = generateRelatedTags(finalItems, query);
@@ -108,15 +94,14 @@ const Search = () => {
                     console.log(`❌ No items found in search response`);
                 }
 
-                // Always set results, even if empty array (shows "No results"
+                // Always set results, even if empty array
                 setResults(finalItems);
-                setNextPageToken(token);
-                console.log(`✅ Search completed for: "${query}"`);
+                setNextPageToken(searchData.nextPageToken);
+                console.log(`✅ Search completed for: "${query}" with ${finalItems.length} results`);
 
             } catch (err) {
                 console.error("💥 Search failed:", err);
                 setError("Something went wrong. Please try again.");
-                // Ensure we show empty results, not a blank screen
                 setResults([]);
             } finally {
                 setIsSearching(false);
@@ -139,30 +124,28 @@ const Search = () => {
             console.log(`📊 Load more response: ${searchData.items?.length || 0} items`);
 
             if (searchData.items && searchData.items.length > 0) {
-                let newItems = [];
-                const videoIds = searchData.items
-                    .map(item => item.id?.videoId)
-                    .filter(Boolean);
-
-                // Enrich or fallback - same robust pattern as main search
-                let detailsData = { items: [] };
-                if (videoIds.length > 0) {
-                    try {
-                        detailsData = await youtubeAPI.getVideosByIds(videoIds);
-                        console.log(`✨ Load more enriched ${detailsData.items?.length || 0} videos`);
-                    } catch (err) {
-                        console.warn("⚠️ Load more enrichment failed", err);
+                // Use same robust transformation as main search
+                const newItems = searchData.items.map((item, index) => {
+                    const videoId = item.id?.videoId;
+                    
+                    if (!videoId) {
+                        console.warn(`Load more: Skipping item ${index} - no videoId found`);
+                        return null;
                     }
-                }
-
-                newItems = searchData.items.map(item => {
-                    const vidId = item.id?.videoId;
-                    const detailedItem = detailsData.items?.find(d => d.id === vidId);
-                    return detailedItem || {
-                        ...item,
-                        id: vidId || item.id
+                    
+                    return {
+                        id: videoId,
+                        snippet: {
+                            title: item.snippet?.title || 'Untitled Video',
+                            channelTitle: item.snippet?.channelTitle || 'Unknown Channel',
+                            channelId: item.snippet?.channelId,
+                            publishedAt: item.snippet?.publishedAt,
+                            thumbnails: item.snippet?.thumbnails || {}
+                        },
+                        ...(item.contentDetails && { contentDetails: item.contentDetails }),
+                        ...(item.statistics && { statistics: item.statistics })
                     };
-                }).filter(Boolean); // Filter out invalid items that might crash VideoCard
+                }).filter(Boolean);
 
                 console.log(`📝 Adding ${newItems.length} new items to results`);
                 setResults(prev => [...prev, ...newItems]);
@@ -260,42 +243,23 @@ const Search = () => {
                         {results.length > 0 ? (
                             <div className="search-results-grid">
                                 {results.map((item, index) => {
-                                    // Enhanced safety check for invalid items
-                                    if (!item) {
-                                        console.warn(`Skipping null item at index ${index}`);
+                                    // Safety check - should never happen with our new logic
+                                    if (!item || !item.id) {
+                                        console.warn(`Skipping invalid item at index ${index}:`, item);
                                         return null;
                                     }
 
-                                    // Ensure item.id exists safely - prevent [object Object] keys
-                                    const safeId = item.id || {};
-                                    const videoId = safeId.videoId || safeId;
+                                    // Generate stable key using the video ID
+                                    const key = `${item.id}-${index}`;
                                     
-                                    // Generate stable key - fix for object ids that cause [object Object]
-                                    let key;
-                                    if (typeof videoId === 'string' && videoId) {
-                                        key = `${videoId}-${index}`;
-                                    } else {
-                                        key = `safe-item-${index}-${Date.now()}-${Math.random()}`;
-                                    }
-                                    
-                                    // Safety: Create a minimal valid video object if needed
-                                    const safeItem = { ...item };
-                                    if (!safeItem.snippet) {
-                                        safeItem.snippet = {
-                                            title: 'Video',
-                                            channelTitle: 'Unknown',
-                                            thumbnails: { medium: { url: '' } }
-                                        };
-                                    }
-
                                     if (index === results.length - 1) {
                                         return (
                                             <div ref={lastResultRef} key={key}>
-                                                <VideoCard video={safeItem} displayType="list" />
+                                                <VideoCard video={item} displayType="list" />
                                             </div>
                                         );
                                     }
-                                    return <VideoCard key={key} video={safeItem} displayType="list" />;
+                                    return <VideoCard key={key} video={item} displayType="list" />;
                                 })}
 
                                 {isLoadingMore && (

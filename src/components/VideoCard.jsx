@@ -19,7 +19,9 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
     const thumbnails = snippet.thumbnails || {};
     const contentDetails = video.contentDetails || {};
     const statistics = video.statistics || {};
-    const videoId = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
+    
+    // Extract videoId - handle both string and object formats
+    const videoId = typeof video.id === 'string' ? video.id : video.id?.videoId;
 
     const formatDuration = (duration) => {
         if (!duration) return '';
