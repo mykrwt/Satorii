@@ -188,7 +188,7 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
 
                             <div className="video-meta">
                                 {views && <span>{formatViews(views)}</span>}
-                                {(views || publishedAt) && <span className="meta-separator">•</span>}
+                                {views && publishedAt && <span className="meta-separator">•</span>}
                                 {publishedAt && <span>{formatPublishedAt(publishedAt)}</span>}
                             </div>
                         </div>

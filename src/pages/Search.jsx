@@ -3,7 +3,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { youtubeAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
 import { searchHistoryService } from '../services/storage';
-import { Search as SearchIcon, X, Clock, History, TrendingUp } from 'lucide-react';
+import { generateRelatedTags } from '../utils/searchHelpers';
+import { Search as SearchIcon, X, Clock, History, TrendingUp, Sparkles } from 'lucide-react';
 import './Search.css';
 
 const Search = () => {
@@ -12,129 +13,91 @@ const Search = () => {
     const query = searchParams.get('q');
 
     const [results, setResults] = useState([]);
-
-    // Loading State
-    const [initialLoading, setInitialLoading] = useState(false);
-    const [loadingMore, setLoadingMore] = useState(false);
+    const [relatedTags, setRelatedTags] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [nextPageToken, setNextPageToken] = useState(null);
+    const [error, setError] = useState(null);
 
     const [history, setHistory] = useState([]);
     const observer = useRef();
 
+    // Load history on mount
     useEffect(() => {
         setHistory(searchHistoryService.get());
     }, []);
 
+    // Main Search Effect
     useEffect(() => {
-        if (query) {
-            // New search: reset everything
+        if (!query) {
             setResults([]);
-            setNextPageToken(null);
-            setLoadingMore(false);
-            performSearch(query, null);
-        } else {
-            setResults([]);
+            setRelatedTags([]);
+            return;
         }
-    }, [query]);
 
-    const performSearch = async (searchQuery, token = null) => {
-        if (!searchQuery.trim()) return;
-
-        if (token) {
-            setLoadingMore(true);
-        } else {
-            setInitialLoading(true);
-            // Save history on new search
-            const currentHistory = searchHistoryService.get();
-            if (!currentHistory.includes(searchQuery)) {
-                searchHistoryService.add(searchQuery);
+        const executeSearch = async () => {
+            setIsSearching(true);
+            setError(null);
+            setNextPageToken(null);
+            setResults([]);
+            
+            // Save to history
+            if (!searchHistoryService.get().includes(query)) {
+                searchHistoryService.add(query);
                 setHistory(searchHistoryService.get());
             }
-        }
 
+            try {
+                // Optimized Search: Single API call, no enrichment
+                const data = await youtubeAPI.search(query, 'video', 20);
+                
+                if (data.items) {
+                    setResults(data.items);
+                    
+                    // Generate Related Tags from the results titles locally (0 API cost)
+                    const generatedTags = generateRelatedTags(data.items, query);
+                    setRelatedTags(generatedTags);
+                    
+                    setNextPageToken(data.nextPageToken);
+                } else {
+                    setResults([]);
+                }
+            } catch (err) {
+                console.error("Search failed:", err);
+                setError("Something went wrong. Please try again.");
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        executeSearch();
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+
+    }, [query]);
+
+    // Load More (Infinite Scroll)
+    const loadMore = async () => {
+        if (isLoadingMore || !nextPageToken) return;
+
+        setIsLoadingMore(true);
         try {
-            // 1. Fetch BASIC search results
-            const data = await youtubeAPI.search(searchQuery, 'video', 20, token);
-            const basicItems = data.items || [];
-
-            if (basicItems.length === 0) {
-                if (!token) setResults([]);
-                setLoadingMore(false);
-                setInitialLoading(false);
-                return;
+            const data = await youtubeAPI.search(query, 'video', 20, nextPageToken);
+            if (data.items) {
+                setResults(prev => [...prev, ...data.items]);
+                setNextPageToken(data.nextPageToken);
             }
-
-            // 2. Extract Video IDs
-            const videoIds = basicItems
-                .map(item => item.id?.videoId || item.id)
-                .filter(id => typeof id === 'string');
-
-            let finalItems = [];
-            const detailsMap = new Map();
-
-            // 3. ENRICH: Fetch FULL details if possible
-            if (videoIds.length > 0) {
-                try {
-                    const detailedData = await youtubeAPI.getVideosByIds(videoIds);
-                    if (detailedData.items && Array.isArray(detailedData.items)) {
-                        detailedData.items.forEach(item => {
-                            // detailed items usually have id as string
-                            if (item.id) {
-                                detailsMap.set(item.id, item);
-                            }
-                        });
-                    }
-                } catch (enrichError) {
-                    console.warn('Video enrichment failed, using basic results:', enrichError);
-                }
-            }
-
-            // 4. MERGE: Combine basic items with details where available
-            // This prevents data loss for items that couldn't be enriched (e.g. channels or restricted videos)
-            finalItems = basicItems.map(item => {
-                const videoId = item.id?.videoId || item.id;
-                const idStr = typeof videoId === 'string' ? videoId : null;
-
-                if (idStr && detailsMap.has(idStr)) {
-                    return detailsMap.get(idStr);
-                }
-
-                // Fallback transformation for items without details
-                return {
-                    ...item,
-                    // Ensure ID is accessible in a standard way if possible
-                    id: idStr || item.id,
-                    snippet: item.snippet || {},
-                    // Explicitly set missing fields to undefined
-                    contentDetails: undefined,
-                    statistics: undefined
-                };
-            });
-
-            if (token) {
-                setResults(prev => [...prev, ...finalItems]);
-            } else {
-                setResults(finalItems);
-            }
-
-            setNextPageToken(data.nextPageToken);
-
-        } catch (error) {
-            console.error('Search failed:', error);
-            // Ensure loading state is reset even on error
+        } catch (err) {
+            console.error("Load more failed:", err);
         } finally {
-            if (token) setLoadingMore(false);
-            else setInitialLoading(false);
+            setIsLoadingMore(false);
         }
     };
 
-    const loadMore = () => {
-        if (loadingMore || !nextPageToken) return;
-        performSearch(query, nextPageToken);
-    };
-
+    // Intersection Observer for Infinite Scroll
     const lastResultRef = useCallback(node => {
-        if (initialLoading || loadingMore) return;
+        if (isSearching || isLoadingMore) return;
         if (observer.current) observer.current.disconnect();
 
         observer.current = new IntersectionObserver(entries => {
@@ -144,9 +107,10 @@ const Search = () => {
         });
 
         if (node) observer.current.observe(node);
-    }, [initialLoading, loadingMore, nextPageToken]);
+    }, [isSearching, isLoadingMore, nextPageToken]);
 
 
+    // History Actions
     const clearHistory = () => {
         searchHistoryService.clear();
         setHistory([]);
@@ -158,44 +122,95 @@ const Search = () => {
         setHistory(searchHistoryService.get());
     };
 
+    const handleTagClick = (tag) => {
+        // If clicking a related tag, search for "Original Query + Tag" or just "Tag"?
+        // Usually "Tag" is better if it's a topic.
+        // Let's try combining if it makes sense, but replacing is standard behavior for "Related searches" links.
+        navigate(`/search?q=${encodeURIComponent(tag)}`);
+    };
+
     return (
         <div className="search-page animate-fade">
             <div className="search-content">
-                {initialLoading && results.length === 0 ? (
+                
+                {/* 1. Loading State */}
+                {isSearching && (
                     <div className="loading-container">
                         <div className="spinner"></div>
+                        <p>Searching for "{query}"...</p>
                     </div>
-                ) : query ? (
-                    <div className="search-results-grid">
-                        {results.map((item, index) => {
-                            if (!item) return null;
-                            
-                            // Safe ID extraction logic matching the transformation in performSearch
-                            const videoId = typeof item.id === 'string' ? item.id : item.id?.videoId;
-                            const uniqueKey = videoId ? `${videoId}-${index}` : `search-result-${index}`;
+                )}
 
-                            if (index === results.length - 1) {
-                                return (
-                                    <div ref={lastResultRef} key={uniqueKey}>
-                                        <VideoCard video={item} displayType="list" />
+                {/* 2. Error State */}
+                {!isSearching && error && (
+                    <div className="error-state">
+                        <p>{error}</p>
+                        <button onClick={() => window.location.reload()}>Try Again</button>
+                    </div>
+                )}
+
+                {/* 3. Results State */}
+                {!isSearching && !error && query && (
+                    <>
+                        {/* Related Tags Bar */}
+                        {relatedTags.length > 0 && (
+                            <div className="related-tags-bar">
+                                <div className="related-label">
+                                    <Sparkles size={16} />
+                                    <span>Related:</span>
+                                </div>
+                                <div className="related-chips">
+                                    {relatedTags.map((tag, idx) => (
+                                        <button 
+                                            key={idx} 
+                                            className="related-chip"
+                                            onClick={() => handleTagClick(tag)}
+                                        >
+                                            {tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Video Grid */}
+                        {results.length > 0 ? (
+                            <div className="search-results-grid">
+                                {results.map((item, index) => {
+                                    if (!item) return null;
+                                    
+                                    // Generate stable key
+                                    const videoId = item.id?.videoId || (typeof item.id === 'string' ? item.id : null);
+                                    const key = videoId ? `${videoId}-${index}` : `item-${index}`;
+
+                                    if (index === results.length - 1) {
+                                        return (
+                                            <div ref={lastResultRef} key={key}>
+                                                <VideoCard video={item} displayType="list" />
+                                            </div>
+                                        );
+                                    }
+                                    return <VideoCard key={key} video={item} displayType="list" />;
+                                })}
+                                
+                                {isLoadingMore && (
+                                    <div className="loading-more">
+                                        <div className="spinner-small"></div>
                                     </div>
-                                );
-                            } else {
-                                return <VideoCard key={uniqueKey} video={item} displayType="list" />;
-                            }
-                        })}
-
-                        {loadingMore && <div className="spinner-small" style={{ margin: '20px auto' }}></div>}
-
-                        {results.length === 0 && !initialLoading && (
+                                )}
+                            </div>
+                        ) : (
                             <div className="empty-state">
                                 <SearchIcon size={48} className="empty-icon" />
                                 <h3>No results found</h3>
-                                <p>Try different keywords</p>
+                                <p>Try checking your spelling or use different keywords</p>
                             </div>
                         )}
-                    </div>
-                ) : (
+                    </>
+                )}
+
+                {/* 4. No Query / Dashboard State */}
+                {!query && (
                     <div className="search-suggestions">
                         {/* History Section */}
                         {history.length > 0 && (
@@ -203,10 +218,10 @@ const Search = () => {
                                 <div className="section-header">
                                     <div className="header-left">
                                         <History size={18} />
-                                        <h3>Recent</h3>
+                                        <h3>Recent Searches</h3>
                                     </div>
                                     <button className="clear-history-btn" onClick={clearHistory}>
-                                        Clear
+                                        Clear All
                                     </button>
                                 </div>
                                 <div className="history-list">
@@ -221,6 +236,7 @@ const Search = () => {
                                             <button
                                                 className="remove-history-btn"
                                                 onClick={(e) => removeFromHistory(e, item)}
+                                                title="Remove from history"
                                             >
                                                 <X size={14} />
                                             </button>
@@ -234,10 +250,10 @@ const Search = () => {
                         <div className="trending-tags-section">
                             <div className="section-header">
                                 <TrendingUp size={18} />
-                                <h3 style={{ color: 'var(--text-primary)' }}>Trending Topics</h3>
+                                <h3>Trending Topics</h3>
                             </div>
                             <div className="tags-cloud">
-                                {['Music', 'Gaming', 'Live', 'News', 'Techno', 'Movies', 'React JS', 'Coding'].map(tag => (
+                                {['New Music', 'Gaming 2025', 'Live News', 'Tech Reviews', 'Movie Trailers', 'React Tutorials', 'Funny Cats', 'ASMR'].map(tag => (
                                     <button
                                         key={tag}
                                         className="tag-chip"
