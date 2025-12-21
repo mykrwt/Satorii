@@ -243,7 +243,7 @@
 .try-again-btn {
     margin-top: 20px;
     background: var(--accent-primary);
-    color: var(--text-on-accent);
+    color: var(--bg-primary);
     border: none;
     padding: 10px 20px;
     border-radius: var(--radius-md);
@@ -254,20 +254,20 @@
 }
 
 .try-again-btn:hover {
-    background: var(--accent-primary-dark);
+    background: var(--accent-secondary);
     transform: translateY(-1px);
 }
 
 .error-icon {
     opacity: 0.5;
-    color: var(--error);
+    color: var(--danger);
     margin-bottom: 12px;
 }
 
 .error-state {
     text-align: center;
     padding: 40px;
-    color: var(--error);
+    color: var(--danger);
 }
 
 .error-state h3 {

@@ -103,7 +103,7 @@
     border: 1px solid var(--border-color);
     padding: 10px;
     border-radius: var(--radius-md);
-    color: white;
+    color: var(--text-primary);
     outline: none;
 }
 
@@ -112,8 +112,8 @@
 }
 
 .create-playlist-form button {
-    background: var(--text-primary);
-    color: black;
+    background: var(--accent-primary);
+    color: var(--bg-primary);
     border: none;
     padding: 10px;
     border-radius: var(--radius-full);
