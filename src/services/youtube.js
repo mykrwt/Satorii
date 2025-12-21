@@ -94,8 +94,13 @@ export const youtubeAPI = {
                     headers: error.response.headers
                 });
             }
-            // Return empty structure instead of throwing to prevent crashes
-            return { items: [], nextPageToken: null };
+
+            const ytError = error.response?.data?.error;
+            return {
+                items: [],
+                nextPageToken: null,
+                ...(ytError ? { error: ytError } : { error: { message: 'YouTube API request failed' } })
+            };
         }
     },
 

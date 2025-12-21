@@ -1,0 +1,123 @@
+.hard-test-page {
+    padding: 24px;
+}
+
+.hard-test-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.hard-test-header h1 {
+    font-size: 28px;
+    margin: 0;
+}
+
+.hard-test-header p {
+    margin-top: 8px;
+    color: var(--text-secondary);
+}
+
+.hard-test-controls {
+    margin-top: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-secondary);
+}
+
+.hard-test-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 220px;
+}
+
+.hard-test-field span {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.hard-test-field input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    outline: none;
+}
+
+.hard-test-error {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--danger);
+    background: rgba(239, 68, 68, 0.12);
+    border-radius: 12px;
+}
+
+.hard-test-results {
+    margin-top: 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.hard-test-card {
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.hard-test-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+}
+
+.hard-test-thumb.placeholder {
+    border: 1px dashed var(--border-color);
+}
+
+.hard-test-title {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.35;
+    color: var(--text-primary);
+}
+
+.hard-test-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.hard-test-link:hover {
+    text-decoration: underline;
+}
+
+.hard-test-raw {
+    margin-top: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--bg-secondary);
+}
+
+.hard-test-raw pre {
+    margin: 12px 0 0;
+    padding: 12px;
+    border-radius: 10px;
+    background: var(--bg-tertiary);
+    overflow: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-secondary);
+}
