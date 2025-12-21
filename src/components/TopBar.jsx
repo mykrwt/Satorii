@@ -39,7 +39,16 @@ const TopBar = ({ toggleNav }) => {
         if (e) e.preventDefault();
         const finalQuery = customQuery || searchInput;
         if (finalQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(finalQuery.trim())}`);
+            // Check if it's a Satorii URL
+            const isSatoriiUrl = finalQuery.includes('satorii-black.vercel.app') || finalQuery.includes('localhost');
+            const videoId = youtubeAPI.extractVideoId(finalQuery);
+
+            if (videoId && (isSatoriiUrl || !finalQuery.includes('http'))) {
+                navigate(`/watch/${videoId}`);
+            } else {
+                navigate(`/search?q=${encodeURIComponent(finalQuery.trim())}`);
+            }
+
             setShowSuggestions(false);
             setIsFocused(false);
         }

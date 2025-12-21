@@ -10,7 +10,8 @@ import {
     Share2,
     ListPlus,
     MessageSquare,
-    X
+    X,
+    PictureInPicture
 } from 'lucide-react';
 import './VideoPlayer.css';
 
@@ -58,6 +59,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
 
     const [showComments, setShowComments] = useState(false);
     const [error, setError] = useState(null);
+    const [isTheaterMode, setIsTheaterMode] = useState(false);
 
     // Infinite Scroll State
     const [nextPageToken, setNextPageToken] = useState(null);
@@ -298,17 +300,24 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
 
     return (
         <div className="video-player-page">
-            <div className="player-main-column">
+            <div className={`player-main-column ${isTheaterMode ? 'theater' : ''}`}>
                 <div className="player-container">
                     <div className="player-wrapper">
                         <iframe
                             ref={iframeRef}
                             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
-                            title="Video Player"
+                            title={video?.snippet?.title || "Video Player"}
                             frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                             allowFullScreen
-                        />
+                        ></iframe>
+                        <button
+                            className="theater-mode-toggle"
+                            onClick={() => setIsTheaterMode(!isTheaterMode)}
+                            title={isTheaterMode ? "Exit Theater Mode" : "Theater Mode"}
+                        >
+                            <div className="theater-icon-box"></div>
+                        </button>
                     </div>
                 </div>
 
@@ -355,6 +364,23 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                                     >
                                         <Clock size={18} fill={inWatchLater ? "currentColor" : "none"} />
                                         <span>{inWatchLater ? 'Saved' : 'Watch Later'}</span>
+                                    </button>
+
+                                    <button
+                                        className="btn-premium action-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (document.pictureInPictureElement) {
+                                                document.exitPictureInPicture();
+                                            } else if (iframeRef.current) {
+                                                // Note: Standard iframe doesn't support requestPictureInPicture directly easily without hacky workarounds or API
+                                                // But we can trigger it if the browser supports it for the video element inside
+                                                alert("To use PiP, please right-click the video (twice) and select 'Picture in Picture'");
+                                            }
+                                        }}
+                                    >
+                                        <PictureInPicture size={18} />
+                                        <span>PiP</span>
                                     </button>
 
                                     <button className="btn-premium action-btn" onClick={(e) => { e.stopPropagation(); setShowPlaylistModal(true); }}>
