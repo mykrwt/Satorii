@@ -150,15 +150,8 @@ const Home = () => {
     }, [initialLoading, loadingMore, nextPageToken]);
 
 
-    if (initialLoading && videos.length === 0) {
-        return (
-            <div className="loading-container">
-                <div className="logo-loading">
-                    <img src="/satorii.png" alt="Satorii" />
-                </div>
-            </div>
-        );
-    }
+    // Removed initial loading screen as requested
+
 
     if (error) {
         return (

@@ -25,17 +25,17 @@ const TopBar = ({ toggleNav }) => {
             {/* Notch and status bar protection */}
             <div className="safe-area-top" />
 
-            <div className="top-bar-left mobile-hidden">
-                <div className="logo-section" onClick={() => navigate('/')}>
+            <div className="top-bar-left">
+                <button className="btn-icon menu-btn-mobile" onClick={toggleNav}>
+                    <Menu size={22} />
+                </button>
+                <div className="logo-section mobile-hidden" onClick={() => navigate('/')}>
                     <img src="/satorii.png" alt="Satorii" className="logo-icon" />
                     <span className="logo-text">Satorii</span>
                 </div>
             </div>
 
             <div className="top-bar-center">
-                <button className="btn-icon menu-btn-mobile" onClick={toggleNav}>
-                    <Menu size={22} />
-                </button>
                 <form className={`search-container ${isFocused ? 'focused' : ''}`} onSubmit={handleSearch}>
                     <div className="search-input-wrapper">
                         {isFocused && <Search size={18} className="search-icon-focused" />}
