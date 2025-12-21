@@ -69,36 +69,47 @@ const Search = () => {
                 .map(item => item.id?.videoId || item.id)
                 .filter(id => typeof id === 'string');
 
-            let finalItems = basicItems;
+            let finalItems = [];
+            const detailsMap = new Map();
 
+            // 3. ENRICH: Fetch FULL details if possible
             if (videoIds.length > 0) {
-                // 3. ENRICH: Fetch FULL details
-                let enrichmentSuccess = false;
                 try {
                     const detailedData = await youtubeAPI.getVideosByIds(videoIds);
-                    if (detailedData.items && detailedData.items.length > 0) {
-                        finalItems = detailedData.items;
-                        enrichmentSuccess = true;
+                    if (detailedData.items && Array.isArray(detailedData.items)) {
+                        detailedData.items.forEach(item => {
+                            // detailed items usually have id as string
+                            if (item.id) {
+                                detailsMap.set(item.id, item);
+                            }
+                        });
                     }
                 } catch (enrichError) {
                     console.warn('Video enrichment failed, using basic results:', enrichError);
                 }
-
-                if (!enrichmentSuccess) {
-                    // Fallback to basic items if enrichment fails (or returns empty items) - transform to match expected structure
-                    finalItems = basicItems.map(item => {
-                        const videoId = item.id?.videoId || item.id;
-                        // Create a structure that VideoCard expects
-                        return {
-                            id: typeof videoId === 'string' ? videoId : item.id,
-                            snippet: item.snippet || {},
-                            // These fields will be undefined but VideoCard handles that gracefully
-                            contentDetails: undefined,
-                            statistics: undefined
-                        };
-                    });
-                }
             }
+
+            // 4. MERGE: Combine basic items with details where available
+            // This prevents data loss for items that couldn't be enriched (e.g. channels or restricted videos)
+            finalItems = basicItems.map(item => {
+                const videoId = item.id?.videoId || item.id;
+                const idStr = typeof videoId === 'string' ? videoId : null;
+
+                if (idStr && detailsMap.has(idStr)) {
+                    return detailsMap.get(idStr);
+                }
+
+                // Fallback transformation for items without details
+                return {
+                    ...item,
+                    // Ensure ID is accessible in a standard way if possible
+                    id: idStr || item.id,
+                    snippet: item.snippet || {},
+                    // Explicitly set missing fields to undefined
+                    contentDetails: undefined,
+                    statistics: undefined
+                };
+            });
 
             if (token) {
                 setResults(prev => [...prev, ...finalItems]);
@@ -110,6 +121,7 @@ const Search = () => {
 
         } catch (error) {
             console.error('Search failed:', error);
+            // Ensure loading state is reset even on error
         } finally {
             if (token) setLoadingMore(false);
             else setInitialLoading(false);
@@ -156,6 +168,9 @@ const Search = () => {
                 ) : query ? (
                     <div className="search-results-grid">
                         {results.map((item, index) => {
+                            if (!item) return null;
+                            
+                            // Safe ID extraction logic matching the transformation in performSearch
                             const videoId = typeof item.id === 'string' ? item.id : item.id?.videoId;
                             const uniqueKey = videoId ? `${videoId}-${index}` : `search-result-${index}`;
 
