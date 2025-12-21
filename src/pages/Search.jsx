@@ -85,10 +85,18 @@ const Search = () => {
                         const detailedItem = detailsData.items?.find(d => d.id === vidId);
 
                         // Return enriched if available, otherwise transform basic result
-                        return detailedItem || {
+                        const result = detailedItem || {
                             ...item,
                             id: vidId || item.id
                         };
+                        
+                        // Enhanced safety: Ensure we have required fields
+                        if (!result || !result.id) {
+                            console.warn(`Skipping invalid result at index ${index}`);
+                            return null;
+                        }
+                        
+                        return result;
                     }).filter(Boolean); // Remove any null/undefined items that might crash VideoCard
 
                     console.log(`📝 Final results count: ${finalItems.length}`);
@@ -252,20 +260,42 @@ const Search = () => {
                         {results.length > 0 ? (
                             <div className="search-results-grid">
                                 {results.map((item, index) => {
-                                    if (!item) return null;
+                                    // Enhanced safety check for invalid items
+                                    if (!item) {
+                                        console.warn(`Skipping null item at index ${index}`);
+                                        return null;
+                                    }
 
-                                    // Generate stable key
-                                    const videoId = item.id?.videoId || (typeof item.id === 'string' ? item.id : null);
-                                    const key = videoId ? `${videoId}-${index}` : `item-${index}`;
+                                    // Ensure item.id exists safely - prevent [object Object] keys
+                                    const safeId = item.id || {};
+                                    const videoId = safeId.videoId || safeId;
+                                    
+                                    // Generate stable key - fix for object ids that cause [object Object]
+                                    let key;
+                                    if (typeof videoId === 'string' && videoId) {
+                                        key = `${videoId}-${index}`;
+                                    } else {
+                                        key = `safe-item-${index}-${Date.now()}-${Math.random()}`;
+                                    }
+                                    
+                                    // Safety: Create a minimal valid video object if needed
+                                    const safeItem = { ...item };
+                                    if (!safeItem.snippet) {
+                                        safeItem.snippet = {
+                                            title: 'Video',
+                                            channelTitle: 'Unknown',
+                                            thumbnails: { medium: { url: '' } }
+                                        };
+                                    }
 
                                     if (index === results.length - 1) {
                                         return (
                                             <div ref={lastResultRef} key={key}>
-                                                <VideoCard video={item} displayType="list" />
+                                                <VideoCard video={safeItem} displayType="list" />
                                             </div>
                                         );
                                     }
-                                    return <VideoCard key={key} video={item} displayType="list" />;
+                                    return <VideoCard key={key} video={safeItem} displayType="list" />;
                                 })}
 
                                 {isLoadingMore && (

@@ -144,3 +144,102 @@
         height: 68px;
     }
 }
+
+/* Playlist Action Buttons Styles */
+.playlist-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-premium.filled {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border: 1px solid var(--accent-primary);
+    padding: 10px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.btn-premium.filled:hover {
+    background: var(--accent-primary-hover);
+    border-color: var(--accent-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 157, 96, 0.2);
+}
+
+.btn-premium.danger {
+    background: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+    padding: 10px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-premium.danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.delete-confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    min-width: 300px;
+}
+
+.delete-confirm-dialog p {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.confirm-actions button {
+    padding: 6px 16px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.confirm-actions button:last-child {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.confirm-actions button:hover {
+    opacity: 0.9;
+}

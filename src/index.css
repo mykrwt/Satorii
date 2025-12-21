@@ -26,6 +26,7 @@
   --border-color: #2a2e2a;
   --hover-black: rgba(0, 0, 0, 0.2);
   --hover-white: rgba(222, 209, 189, 0.1);
+  --danger: #ef4444;
 
   /* Layout */
   --sidebar-width: 240px;

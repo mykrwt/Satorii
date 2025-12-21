@@ -4,7 +4,8 @@ import axios from 'axios';
 const API_KEYS = [
     'AIzaSyCZr5hLowxIZfACJON4IRCUruoelK5AEx4', // Default
     'AIzaSyCVGJ7BMf8kfljknnw12vX_P1mb3Vap-XQ', // Backup 1
-    'AIzaSyAR_FlsSpfCCnlDTtP5Mx-QA5yiGyC6xmQ'  // Backup 2
+    'AIzaSyAR_FlsSpfCCnlDTtP5Mx-QA5yiGyC6xmQ', // Backup 2
+    'AIzaSyCQE7nxqXNvJo1N1LCfLx0i5I2Yd2Mbqn8'  // Backup 3
 ];
 let currentKeyIndex = 0;
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
