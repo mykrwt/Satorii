@@ -6,6 +6,7 @@ import { Play, ListVideo, Film, Shuffle, Trash2 } from 'lucide-react';
 import './Playlist.css';
 
 import VideoCard from '../components/VideoCard';
+import { filterOutShorts } from '../utils/videoFilters';
 
 const Playlist = () => {
     const { playlistId } = useParams();
@@ -43,27 +44,27 @@ const Playlist = () => {
                     const ids = items.map(v => v.id);
                     const enriched = await youtubeAPI.getVideosByIds(ids);
                     if (enriched.items) {
-                        setVideos(enriched.items);
+                        setVideos(filterOutShorts(enriched.items));
                     } else {
-                        setVideos(items.map(v => ({
+                        setVideos(filterOutShorts(items.map(v => ({
                             id: v.id,
                             snippet: {
                                 title: v.title,
                                 channelTitle: v.channelTitle,
                                 thumbnails: { medium: { url: v.thumbnail } }
                             }
-                        })));
+                        }))));
                     }
                 } catch (err) {
                     console.warn("Failed to enrich playlist items", err);
-                    setVideos(items.map(v => ({
+                    setVideos(filterOutShorts(items.map(v => ({
                         id: v.id,
                         snippet: {
                             title: v.title,
                             channelTitle: v.channelTitle,
                             thumbnails: { medium: { url: v.thumbnail } }
                         }
-                    })));
+                    }))));
                 }
             } else {
                 setVideos([]);
@@ -86,7 +87,7 @@ const Playlist = () => {
                 const playlistItems = await youtubeAPI.getPlaylistItems(playlistId);
                 const videoIds = playlistItems.items.map(item => item.snippet.resourceId.videoId);
                 const fullVideos = await youtubeAPI.getVideosByIds(videoIds);
-                setVideos(fullVideos.items || []);
+                setVideos(filterOutShorts(fullVideos.items || []));
             }
         } catch (err) {
             console.error("Playlist load error", err);

@@ -218,6 +218,29 @@ export const youtubeAPI = {
         }
     },
 
+    // Get channel playlists
+    getChannelPlaylists: async (channelId, maxResults = 20, pageToken = null) => {
+        const cacheKey = `channel_playlists_${channelId}_${pageToken}`;
+        const cached = getCached(cacheKey);
+        if (cached) return cached;
+
+        try {
+            const response = await api.get('/playlists', {
+                params: {
+                    part: 'snippet,contentDetails',
+                    channelId,
+                    maxResults,
+                    pageToken,
+                },
+            });
+            setCache(cacheKey, response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Get channel playlists error:', error);
+            return { items: [], nextPageToken: null };
+        }
+    },
+
     // Get playlist details
     getPlaylistDetails: async (playlistId) => {
         const cacheKey = `playlist_${playlistId}`;

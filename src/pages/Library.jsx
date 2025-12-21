@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { historyService, watchLaterService, playlistService, likeService } from '../services/storage';
+import { useNavigate } from 'react-router-dom';
+import { historyService } from '../services/storage';
 import VideoCard from '../components/VideoCard';
 import { youtubeAPI } from '../services/youtube';
+import { filterOutShorts, isYouTubeShort } from '../utils/videoFilters';
 import './Library.css';
 
 const Library = () => {
@@ -25,7 +26,7 @@ const Library = () => {
                 const ids = historyData.map(v => v.id);
                 const enriched = await youtubeAPI.getVideosByIds(ids);
                 if (enriched.items) {
-                    setEnrichedVideos(enriched.items);
+                    setEnrichedVideos(filterOutShorts(enriched.items));
                 }
             } catch (err) {
                 console.warn("Failed to enrich history metadata", err);
@@ -42,6 +43,23 @@ const Library = () => {
         }
     };
 
+    const visibleHistoryVideos = history
+        .map((hVideo) => {
+            const fullVideo = enrichedVideos.find(v => v.id === hVideo.id) || {
+                id: hVideo.id,
+                snippet: {
+                    title: hVideo.title,
+                    channelTitle: hVideo.channelTitle,
+                    thumbnails: { medium: { url: hVideo.thumbnail } },
+                    publishedAt: hVideo.watchedAt,
+                },
+                statistics: { viewCount: '0' },
+            };
+
+            return isYouTubeShort(fullVideo) ? null : fullVideo;
+        })
+        .filter(Boolean);
+
     return (
         <div className="page library-page animate-fade">
             <div className="content-header history-header-row">
@@ -56,27 +74,21 @@ const Library = () => {
             <div className="library-content">
                 {loading ? (
                     <div className="loading-container"><div className="spinner"></div></div>
-                ) : history.length > 0 ? (
+                ) : visibleHistoryVideos.length > 0 ? (
                     <div className="video-grid">
-                        {history.map((hVideo) => {
-                            // Find enriched data or fallback to local
-                            const fullVideo = enrichedVideos.find(v => v.id === hVideo.id) || {
-                                id: hVideo.id,
-                                snippet: {
-                                    title: hVideo.title,
-                                    channelTitle: hVideo.channelTitle,
-                                    thumbnails: { medium: { url: hVideo.thumbnail } },
-                                    publishedAt: hVideo.watchedAt
-                                },
-                                statistics: { viewCount: '0' }
-                            };
-                            return (
-                                <VideoCard
-                                    key={hVideo.id}
-                                    video={fullVideo}
-                                />
-                            );
-                        })}
+                        {visibleHistoryVideos.map((video) => (
+                            <VideoCard
+                                key={video.id}
+                                video={video}
+                            />
+                        ))}
+                    </div>
+                ) : history.length > 0 ? (
+                    <div className="empty-state">
+                        <div className="empty-icon-large">🚫</div>
+                        <h2>No videos to show</h2>
+                        <p>Shorts are hidden, and your history currently contains only Shorts.</p>
+                        <button className="btn-premium filled" onClick={() => navigate('/')}>Explore Videos</button>
                     </div>
                 ) : (
                     <div className="empty-state">

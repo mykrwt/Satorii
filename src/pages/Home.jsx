@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { youtubeAPI } from '../services/youtube';
 import VideoCard from '../components/VideoCard';
+import { filterOutShortSearchItems, filterOutShorts, getVideoId } from '../utils/videoFilters';
 import './Home.css';
 
 const Home = () => {
@@ -10,6 +11,13 @@ const Home = () => {
     // Unified video list
     const [videos, setVideos] = useState([]);
     const [nextPageToken, setNextPageToken] = useState(null);
+
+    const [feedStrategy, setFeedStrategy] = useState({
+        mode: 'trending',
+        source: 'videos',
+        query: null,
+        categoryId: null,
+    });
 
     // Loading states
     const [initialLoading, setInitialLoading] = useState(true);
@@ -33,22 +41,35 @@ const Home = () => {
         }
     }, [selectedCategory]);
 
-    // Helper: Duration to Seconds
-    const getDurationInSeconds = (duration) => {
-        if (!duration) return -1;
-        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-        if (!match) return 0;
-        const hours = (parseInt(match[1]) || 0);
-        const minutes = (parseInt(match[2]) || 0);
-        const seconds = (parseInt(match[3]) || 0);
-        return hours * 3600 + minutes * 60 + seconds;
-    };
+    const normalizeToVideoItems = async (items) => {
+        if (!items || items.length === 0) return [];
 
-    const filterVideos = (items) => {
-        return (items || []).filter(item => {
-            const seconds = getDurationInSeconds(item.contentDetails?.duration);
-            return seconds > 60 || seconds === -1;
-        });
+        // Search results need enrichment to get durations/statistics (so we can reliably hide Shorts)
+        const looksLikeSearch = items.some(i => i?.id?.videoId);
+
+        if (looksLikeSearch) {
+            const searchItems = filterOutShortSearchItems(items);
+            const ids = searchItems.map(i => i?.id?.videoId).filter(Boolean);
+            if (ids.length === 0) return [];
+
+            try {
+                const detailed = await youtubeAPI.getVideosByIds(ids);
+                if (detailed?.items?.length) {
+                    return detailed.items;
+                }
+            } catch (err) {
+                console.warn('Failed to enrich search fallback items', err);
+            }
+
+            return searchItems
+                .map(i => ({
+                    id: i.id?.videoId,
+                    snippet: i.snippet,
+                }))
+                .filter(v => v && v.id);
+        }
+
+        return items.filter(v => v && v.id);
     };
 
     // Optimized Batch Fetch
@@ -80,45 +101,43 @@ const Home = () => {
             }
 
             // 2. Fetch Trending (Critical) - with robust fallback
+            const fallbackQuery = 'popular videos';
             let trendingData;
+            let nextStrategy = {
+                mode: 'trending',
+                source: 'videos',
+                query: null,
+                categoryId: null,
+            };
+
             try {
                 trendingData = await youtubeAPI.getTrending('US', 20);
-                
+
                 // If service caught an error, it returns empty items. Treat this as failure to trigger fallback.
                 if (!trendingData?.items || trendingData.items.length === 0) {
-                     throw new Error('Trending API returned empty items');
+                    throw new Error('Trending API returned empty items');
                 }
             } catch (trendingErr) {
                 console.warn('Trending API failed or empty, trying fallback search:', trendingErr);
-                // Fallback: try to get popular videos via search
                 try {
-                    trendingData = await youtubeAPI.search('popular videos', 'video', 20);
+                    trendingData = await youtubeAPI.search(fallbackQuery, 'video', 20);
+                    nextStrategy = {
+                        mode: 'trending',
+                        source: 'search',
+                        query: fallbackQuery,
+                        categoryId: null,
+                    };
                 } catch (searchErr) {
                     console.error('Both trending and fallback search failed:', searchErr);
-                    trendingData = { items: [] };
+                    trendingData = { items: [], nextPageToken: null };
                 }
             }
 
-            // Robust data transformation with fallback
-            let validVideos = [];
-            if (trendingData?.items && trendingData.items.length > 0) {
-                // Transform search results if needed (similar to Search.jsx pattern)
-                const transformedItems = trendingData.items.map(item => {
-                    // If item.id is an object with videoId (from search), transform it
-                    if (item.id?.videoId && typeof item.id === 'object') {
-                        return {
-                            ...item,
-                            id: item.id.videoId
-                        };
-                    }
-                    // If item.id is already a string (from videos endpoint), keep as is
-                    return item;
-                }).filter(item => item && item.id); // Filter out invalid items
+            setFeedStrategy(nextStrategy);
 
-                validVideos = filterVideos(transformedItems);
-            }
+            let validVideos = await normalizeToVideoItems(trendingData?.items || []);
+            validVideos = filterOutShorts(validVideos);
 
-            // Prefetch icons prevents cascading 20 requests
             if (validVideos.length > 0) {
                 await fetchChannelIcons(validVideos);
             }
@@ -126,7 +145,6 @@ const Home = () => {
             setVideos(validVideos);
             setNextPageToken(trendingData?.nextPageToken);
 
-            // Show error if no videos loaded
             if (validVideos.length === 0) {
                 setError('No videos available at the moment. Please try again later.');
             }
@@ -142,47 +160,113 @@ const Home = () => {
     const loadVideos = async (token = null, categoryId = null) => {
         try {
             // If manual load (category switch), ensure consistent loading state
-            if (!token) setInitialLoading(true);
+            if (!token) {
+                setInitialLoading(true);
+                setError(null);
+            }
 
             let data;
-            try {
-                if (categoryId) {
-                    data = await youtubeAPI.getVideosByCategory(categoryId, 'US', 20, token);
-                } else {
-                    data = await youtubeAPI.getTrending('US', 20, token);
-                }
-            } catch (apiErr) {
-                console.warn('Primary API failed, trying fallback search:', apiErr);
-                // Fallback to search for both categories and trending
-                try {
-                    const searchQuery = categoryId ? `category ${categoryId}` : 'trending videos';
-                    data = await youtubeAPI.search(searchQuery, 'video', 20, token);
-                } catch (searchErr) {
-                    console.error('Both primary and fallback APIs failed:', searchErr);
-                    data = { items: [] };
-                }
-            }
+            let nextStrategy = feedStrategy;
 
-            // Robust data transformation with fallback
-            let newVideos = [];
-            if (data?.items && data.items.length > 0) {
-                // Transform search results if needed (similar to Search.jsx pattern)
-                const transformedItems = data.items.map(item => {
-                    // If item.id is an object with videoId (from search), transform it
-                    if (item.id?.videoId && typeof item.id === 'object') {
-                        return {
-                            ...item,
-                            id: item.id.videoId
+            const isPaginating = Boolean(token);
+            const wantsCategory = Boolean(categoryId);
+
+            if (!isPaginating) {
+                // New feed request (initial load or category switch): determine a stable strategy
+                if (wantsCategory) {
+                    try {
+                        data = await youtubeAPI.getVideosByCategory(categoryId, 'US', 20, null);
+                        if (!data?.items || data.items.length === 0) {
+                            throw new Error('Category API returned empty items');
+                        }
+                        nextStrategy = {
+                            mode: 'category',
+                            source: 'videos',
+                            query: null,
+                            categoryId,
                         };
+                    } catch (apiErr) {
+                        console.warn('Category API failed or empty, using search fallback:', apiErr);
+                        const searchQuery = `category ${categoryId}`;
+                        try {
+                            data = await youtubeAPI.search(searchQuery, 'video', 20, null);
+                            nextStrategy = {
+                                mode: 'category',
+                                source: 'search',
+                                query: searchQuery,
+                                categoryId,
+                            };
+                        } catch (searchErr) {
+                            console.error('Category search fallback failed:', searchErr);
+                            data = { items: [], nextPageToken: null };
+                        }
                     }
-                    // If item.id is already a string (from videos endpoint), keep as is
-                    return item;
-                }).filter(item => item && item.id); // Filter out invalid items
+                } else {
+                    const fallbackQuery = 'popular videos';
+                    try {
+                        data = await youtubeAPI.getTrending('US', 20, null);
+                        if (!data?.items || data.items.length === 0) {
+                            throw new Error('Trending API returned empty items');
+                        }
+                        nextStrategy = {
+                            mode: 'trending',
+                            source: 'videos',
+                            query: null,
+                            categoryId: null,
+                        };
+                    } catch (apiErr) {
+                        console.warn('Trending API failed or empty, using search fallback:', apiErr);
+                        try {
+                            data = await youtubeAPI.search(fallbackQuery, 'video', 20, null);
+                            nextStrategy = {
+                                mode: 'trending',
+                                source: 'search',
+                                query: fallbackQuery,
+                                categoryId: null,
+                            };
+                        } catch (searchErr) {
+                            console.error('Trending search fallback failed:', searchErr);
+                            data = { items: [], nextPageToken: null };
+                        }
+                    }
+                }
 
-                newVideos = filterVideos(transformedItems);
+                setFeedStrategy(nextStrategy);
+            } else {
+                // Pagination: continue using the established strategy so the pageToken stays compatible
+                if (wantsCategory && (nextStrategy.mode !== 'category' || nextStrategy.categoryId !== categoryId)) {
+                    nextStrategy = {
+                        mode: 'category',
+                        source: 'videos',
+                        query: null,
+                        categoryId,
+                    };
+                    setFeedStrategy(nextStrategy);
+                }
+
+                if (!wantsCategory && nextStrategy.mode !== 'trending') {
+                    nextStrategy = {
+                        mode: 'trending',
+                        source: 'videos',
+                        query: null,
+                        categoryId: null,
+                    };
+                    setFeedStrategy(nextStrategy);
+                }
+
+                if (nextStrategy.source === 'search') {
+                    const query = nextStrategy.query || (wantsCategory ? `category ${categoryId}` : 'popular videos');
+                    data = await youtubeAPI.search(query, 'video', 20, token);
+                } else {
+                    data = wantsCategory
+                        ? await youtubeAPI.getVideosByCategory(categoryId, 'US', 20, token)
+                        : await youtubeAPI.getTrending('US', 20, token);
+                }
             }
 
-            // Prefetch icons if we have videos
+            let newVideos = await normalizeToVideoItems(data?.items || []);
+            newVideos = filterOutShorts(newVideos);
+
             if (newVideos.length > 0) {
                 await fetchChannelIcons(newVideos);
             }
@@ -193,8 +277,7 @@ const Home = () => {
             } else {
                 setVideos(newVideos);
                 setInitialLoading(false);
-                
-                // Show error if no videos loaded
+
                 if (newVideos.length === 0) {
                     setError('No videos available for this category. Please try again later.');
                 }
@@ -279,16 +362,15 @@ const Home = () => {
             <div className="videos-section">
                 <div className="video-grid">
                     {videos.filter(video => video && video.id).map((video, index) => {
-                        const videoId = typeof video.id === 'string' ? video.id : video.id?.videoId;
+                        const videoId = getVideoId(video);
                         if (index === videos.length - 1) {
                             return (
                                 <div ref={lastVideoRef} key={`${videoId || 'unknown'}-${index}`}>
                                     <VideoCard video={video} />
                                 </div>
                             );
-                        } else {
-                            return <VideoCard key={`${videoId || 'unknown'}-${index}`} video={video} />;
                         }
+                        return <VideoCard key={`${videoId || 'unknown'}-${index}`} video={video} />;
                     })}
                 </div>
                 {loadingMore && <div className="spinner-small" style={{ margin: '40px auto' }}></div>}

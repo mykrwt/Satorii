@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { youtubeAPI } from '../services/youtube';
+import { filterOutShortSearchItems } from '../utils/videoFilters';
 import './HardTestSearch.css';
 
 const HardTestSearch = () => {
@@ -10,7 +11,8 @@ const HardTestSearch = () => {
     const [rawResponse, setRawResponse] = useState(null);
 
     const items = useMemo(() => {
-        return Array.isArray(rawResponse?.items) ? rawResponse.items : [];
+        const rawItems = Array.isArray(rawResponse?.items) ? rawResponse.items : [];
+        return filterOutShortSearchItems(rawItems);
     }, [rawResponse]);
 
     const runSearch = async () => {
