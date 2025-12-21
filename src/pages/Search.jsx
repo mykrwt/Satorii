@@ -73,9 +73,25 @@ const Search = () => {
 
             if (videoIds.length > 0) {
                 // 3. ENRICH: Fetch FULL details
-                const detailedData = await youtubeAPI.getVideosByIds(videoIds);
-                if (detailedData.items && detailedData.items.length > 0) {
-                    finalItems = detailedData.items;
+                try {
+                    const detailedData = await youtubeAPI.getVideosByIds(videoIds);
+                    if (detailedData.items && detailedData.items.length > 0) {
+                        finalItems = detailedData.items;
+                    }
+                } catch (enrichError) {
+                    console.warn('Video enrichment failed, using basic results:', enrichError);
+                    // Fallback to basic items if enrichment fails - transform to match expected structure
+                    finalItems = basicItems.map(item => {
+                        const videoId = item.id?.videoId || item.id;
+                        // Create a structure that VideoCard expects
+                        return {
+                            id: typeof videoId === 'string' ? videoId : item.id,
+                            snippet: item.snippet || {},
+                            // These fields will be undefined but VideoCard handles that gracefully
+                            contentDetails: undefined,
+                            statistics: undefined
+                        };
+                    });
                 }
             }
 
