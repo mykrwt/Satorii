@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import ChannelAvatar from './ChannelAvatar';
+import VideoPreview from './VideoPreview';
 import './VideoCard.css';
 
 const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
     const navigate = useNavigate();
+    const [showPreview, setShowPreview] = useState(false);
+    const [anchorRect, setAnchorRect] = useState(null);
+    const hoverTimeoutRef = useRef(null);
+    const cardRef = useRef(null);
 
     if (!video) return null;
 
@@ -83,6 +88,56 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
         }
     };
 
+    const handleMouseEnter = () => {
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        
+        // Only show preview on desktop (wider screens)
+        if (window.innerWidth >= 1024) {
+            hoverTimeoutRef.current = setTimeout(() => {
+                if (cardRef.current) {
+                    const rect = cardRef.current.getBoundingClientRect();
+                    setAnchorRect({
+                        top: rect.top,
+                        left: rect.right + 10,
+                        bottom: rect.bottom,
+                        right: rect.right
+                    });
+                    setShowPreview(true);
+                }
+            }, 800); // Show preview after 800ms hover
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+        setShowPreview(false);
+    };
+
+    const handleTouchStart = (e) => {
+        if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        
+        hoverTimeoutRef.current = setTimeout(() => {
+            if (cardRef.current) {
+                const rect = cardRef.current.getBoundingClientRect();
+                setAnchorRect({
+                    top: rect.top,
+                    left: rect.right + 10,
+                    bottom: rect.bottom,
+                    right: rect.right
+                });
+                setShowPreview(true);
+            }
+        }, 500); // Show preview after 500ms long-press
+    };
+
+    const handleTouchEnd = () => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+    };
+
     const thumbnail = video.snippet?.thumbnails?.maxres?.url ||
         video.snippet?.thumbnails?.standard?.url ||
         video.snippet?.thumbnails?.high?.url ||
@@ -94,42 +149,61 @@ const VideoCard = ({ video, showChannel = true, displayType = 'grid' }) => {
     const publishedAt = video.snippet?.publishedAt;
     const title = video.snippet?.title || 'Untitled Video';
     const channelTitle = video.snippet?.channelTitle || 'Unknown Channel';
+    const videoIdForPreview = video.id?.videoId || (typeof video.id === 'string' ? video.id : null);
 
     return (
-        <div className={`video-card ${displayType}`} onClick={handleClick}>
-            <div className="video-thumbnail">
-                {thumbnail && <img src={thumbnail} alt={title} loading="lazy" />}
-                {duration && (
-                    <span className="video-duration">{formatDuration(duration)}</span>
-                )}
-            </div>
-
-            <div className="video-info">
-                <h3 className="video-title" title={title}>{title}</h3>
-
-                <div className="video-meta-container">
-                    {showChannel && displayType === 'grid' && (
-                        <div className="video-avatar-wrapper" onClick={handleChannelClick}>
-                            <ChannelAvatar channelId={video.snippet?.channelId} channelTitle={channelTitle} size={32} />
-                        </div>
+        <>
+            <div 
+                ref={cardRef}
+                className={`video-card ${displayType}`} 
+                onClick={handleClick}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+            >
+                <div className="video-thumbnail">
+                    {thumbnail && <img src={thumbnail} alt={title} loading="lazy" />}
+                    {duration && (
+                        <span className="video-duration">{formatDuration(duration)}</span>
                     )}
+                </div>
 
-                    <div className="video-meta-text">
-                        {showChannel && (
-                            <div className="video-channel" onClick={handleChannelClick}>
-                                {channelTitle}
+                <div className="video-info">
+                    <h3 className="video-title" title={title}>{title}</h3>
+
+                    <div className="video-meta-container">
+                        {showChannel && displayType === 'grid' && (
+                            <div className="video-avatar-wrapper" onClick={handleChannelClick}>
+                                <ChannelAvatar channelId={video.snippet?.channelId} channelTitle={channelTitle} size={32} />
                             </div>
                         )}
 
-                        <div className="video-meta">
-                            {views && <span>{formatViews(views)}</span>}
-                            {(views || publishedAt) && <span className="meta-separator">•</span>}
-                            {publishedAt && <span>{formatPublishedAt(publishedAt)}</span>}
+                        <div className="video-meta-text">
+                            {showChannel && (
+                                <div className="video-channel" onClick={handleChannelClick}>
+                                    {channelTitle}
+                                </div>
+                            )}
+
+                            <div className="video-meta">
+                                {views && <span>{formatViews(views)}</span>}
+                                {(views || publishedAt) && <span className="meta-separator">•</span>}
+                                {publishedAt && <span>{formatPublishedAt(publishedAt)}</span>}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {showPreview && videoIdForPreview && (
+                <VideoPreview 
+                    videoId={videoIdForPreview}
+                    onClose={() => setShowPreview(false)}
+                    anchorRect={anchorRect}
+                />
+            )}
+        </>
     );
 };
 

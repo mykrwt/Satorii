@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Check } from 'lucide-react';
 import { playlistService } from '../services/storage';
 import './AddToPlaylistModal.css';
@@ -54,7 +55,7 @@ const AddToPlaylistModal = ({ video, onClose }) => {
         return playlist.videos.some(v => v.id === vidId);
     };
 
-    return (
+    const modalContent = (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
@@ -98,6 +99,8 @@ const AddToPlaylistModal = ({ video, onClose }) => {
             </div>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 };
 
 export default AddToPlaylistModal;
