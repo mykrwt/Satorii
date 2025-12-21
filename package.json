@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.6.1",
     "@vitejs/plugin-react": "^5.1.2",
     "axios": "^1.13.2",
     "lucide-react": "^0.562.0",

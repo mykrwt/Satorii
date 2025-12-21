@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 import Search from './pages/Search';
 import VideoPlayer from './pages/VideoPlayer';
@@ -58,6 +59,7 @@ function AppContent() {
 
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
+            <Analytics />
             <TopBar toggleNav={toggleNav} />
 
             <div className="app-layout">
