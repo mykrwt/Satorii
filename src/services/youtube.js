@@ -35,7 +35,7 @@ api.interceptors.response.use(
                 console.log(`⚠️ Quota exceeded. Switching to API Key ${currentKeyIndex + 1}/${API_KEYS.length}`);
 
                 // Update key for retry
-                originalRequest.params.key = API_KEYS[currentKeyIndex];
+                originalRequest.params = { ...originalRequest.params, key: API_KEYS[currentKeyIndex] };
                 return api(originalRequest);
             } else {
                 console.error("❌ All API keys exhausted.");

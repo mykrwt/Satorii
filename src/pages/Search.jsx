@@ -39,7 +39,7 @@ const Search = () => {
             setIsSearching(true);
             setError(null);
             setNextPageToken(null);
-            
+
             // Save to history
             if (!searchHistoryService.get().includes(query)) {
                 searchHistoryService.add(query);
@@ -54,20 +54,20 @@ const Search = () => {
                 console.log(`📊 Search API response:`, searchData);
 
                 let finalItems = [];
-                
+
                 if (searchData.items && searchData.items.length > 0) {
                     console.log(`🎬 Found ${searchData.items.length} items`);
-                    
+
                     // Extract and format video items correctly
                     finalItems = searchData.items.map((item, index) => {
                         // Extract videoId correctly from YouTube search response
                         const videoId = item.id?.videoId;
-                        
+
                         if (!videoId) {
                             console.warn(`Skipping item ${index} - no videoId found:`, item);
                             return null;
                         }
-                        
+
                         // Return a clean, properly structured video object
                         return {
                             id: videoId,
@@ -101,7 +101,8 @@ const Search = () => {
 
             } catch (err) {
                 console.error("💥 Search failed:", err);
-                setError("Something went wrong. Please try again.");
+                const errorMsg = err.response?.data?.error?.message || "Something went wrong. Please try again.";
+                setError(errorMsg);
                 setResults([]);
             } finally {
                 setIsSearching(false);
@@ -127,12 +128,12 @@ const Search = () => {
                 // Use same robust transformation as main search
                 const newItems = searchData.items.map((item, index) => {
                     const videoId = item.id?.videoId;
-                    
+
                     if (!videoId) {
                         console.warn(`Load more: Skipping item ${index} - no videoId found`);
                         return null;
                     }
-                    
+
                     return {
                         id: videoId,
                         snippet: {
@@ -195,7 +196,7 @@ const Search = () => {
     return (
         <div className="search-page animate-fade">
             <div className="search-content">
-                
+
                 {/* 1. Loading State */}
                 {isSearching && (
                     <div className="loading-container">
@@ -251,7 +252,7 @@ const Search = () => {
 
                                     // Generate stable key using the video ID
                                     const key = `${item.id}-${index}`;
-                                    
+
                                     if (index === results.length - 1) {
                                         return (
                                             <div ref={lastResultRef} key={key}>

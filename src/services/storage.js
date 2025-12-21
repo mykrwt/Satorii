@@ -292,6 +292,7 @@ export const preferencesService = {
 // Search history
 export const searchHistoryService = {
     getAll: () => getItem(STORAGE_KEYS.SEARCH_HISTORY, []),
+    get: () => getItem(STORAGE_KEYS.SEARCH_HISTORY, []),
 
     add: (query) => {
         if (!query.trim()) return;
