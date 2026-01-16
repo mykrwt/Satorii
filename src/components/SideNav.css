@@ -206,4 +206,9 @@
         transform: translateX(-100%);
         width: 0;
     }
+
+    /* Hide the internal menu button on mobile to avoid double nav headers */
+    .mobile-hidden-btn {
+        display: none !important;
+    }
 }

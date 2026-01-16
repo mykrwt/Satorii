@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Menu, X, User, LogIn, LogOut } from 'lucide-react';
+import { Search, Menu, X, User, LogIn, LogOut, CircleUser } from 'lucide-react';
 import { youtubeAPI } from '../services/youtube';
 import { authService } from '../services/firebase';
 import './TopBar.css';
@@ -163,8 +163,9 @@ const TopBar = ({ toggleNav }) => {
                         </button>
                     </>
                 ) : (
-                    <button className="btn-icon" onClick={() => navigate('/login')} title="Sign In">
-                        <LogIn size={20} />
+                    <button className="sign-in-btn" onClick={() => navigate('/login')}>
+                        <CircleUser size={20} />
+                        <span>Sign in</span>
                     </button>
                 )}
             </div>

@@ -292,3 +292,24 @@
         overflow-y: auto;
     }
 }
+
+.sign-in-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 16px;
+    border: 1px solid rgba(62, 166, 255, 0.2);
+    border-radius: 18px;
+    background: transparent;
+    color: #3ea6ff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 36px;
+}
+
+.sign-in-btn:hover {
+    background: rgba(62, 166, 255, 0.15);
+    border-color: transparent;
+}

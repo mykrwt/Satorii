@@ -10,7 +10,7 @@ import {
     Plus,
     Settings
 } from 'lucide-react';
-import { playlistService, subscriptionService } from '../services/storage';
+import { authService } from '../services/firebase';
 import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
@@ -18,6 +18,14 @@ const SideNav = ({ collapsed, toggleNav }) => {
     const navigate = useNavigate();
     const [playlists, setPlaylists] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = authService.subscribe((u) => {
+            setUser(u);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         setPlaylists(playlistService.getAll());
@@ -49,6 +57,12 @@ const SideNav = ({ collapsed, toggleNav }) => {
         { path: '/settings', icon: Settings, label: 'Settings' },
     ];
 
+    // Filter items based on auth
+    const visibleSecondaryItems = secondaryItems.filter(item => {
+        if (!user && (item.label === 'Watch Later' || item.label === 'History')) return false;
+        return true;
+    });
+
     const [expandedSubs, setExpandedSubs] = useState(false);
     const displayedSubs = expandedSubs ? subscriptions : subscriptions.slice(0, 4);
 
@@ -63,7 +77,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
     return (
         <nav className={`side-nav ${collapsed ? 'collapsed' : ''}`}>
             <div className={`nav-header ${collapsed ? 'collapsed' : ''}`}>
-                <button className="btn-icon menu-toggle" onClick={toggleNav}>
+                <button className="btn-icon menu-toggle mobile-hidden-btn" onClick={toggleNav}>
                     <Menu size={22} />
                 </button>
                 <div className="logo-container" onClick={() => navigate('/')}>
@@ -91,7 +105,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
             <div className="nav-divider"></div>
 
             <div className="nav-section">
-                {secondaryItems.map((item) => (
+                {visibleSecondaryItems.map((item) => (
                     <NavLink
                         key={item.path}
                         to={item.path}
@@ -106,74 +120,78 @@ const SideNav = ({ collapsed, toggleNav }) => {
                 ))}
             </div>
 
-            <div className="nav-divider"></div>
+            {user && (
+                <>
+                    <div className="nav-divider"></div>
 
-            {subscriptions.length > 0 && (
-                <div className="nav-section">
-                    {!collapsed && <h4 className="nav-section-title">Subscriptions</h4>}
-                    {displayedSubs.map((sub) => (
-                        <NavLink
-                            key={sub.id}
-                            to={`/channel/${sub.id}`}
-                            onClick={handleNavItemClick}
-                            className={({ isActive }) =>
-                                `nav-item ${isActive ? 'active' : ''}`
-                            }
-                            title={sub.title}
-                        >
-                            {sub.thumbnail ? (
-                                <img src={sub.thumbnail} alt="" className="sub-avatar-img" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
-                            ) : (
-                                <div className="sub-avatar-mini" style={{ width: '24px', height: '24px', minWidth: '24px', borderRadius: '50%', background: 'var(--bg-tertiary)', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
-                                    {sub.title.charAt(0).toUpperCase()}
-                                </div>
+                    {subscriptions.length > 0 && (
+                        <div className="nav-section">
+                            {!collapsed && <h4 className="nav-section-title">Subscriptions</h4>}
+                            {displayedSubs.map((sub) => (
+                                <NavLink
+                                    key={sub.id}
+                                    to={`/channel/${sub.id}`}
+                                    onClick={handleNavItemClick}
+                                    className={({ isActive }) =>
+                                        `nav-item ${isActive ? 'active' : ''}`
+                                    }
+                                    title={sub.title}
+                                >
+                                    {sub.thumbnail ? (
+                                        <img src={sub.thumbnail} alt="" className="sub-avatar-img" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
+                                    ) : (
+                                        <div className="sub-avatar-mini" style={{ width: '24px', height: '24px', minWidth: '24px', borderRadius: '50%', background: 'var(--bg-tertiary)', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
+                                            {sub.title.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                    {!collapsed && <span className="nav-label">{sub.title}</span>}
+                                </NavLink>
+                            ))}
+                            {!collapsed && subscriptions.length > 4 && (
+                                <button className="nav-item show-more-subs" onClick={() => setExpandedSubs(!expandedSubs)}>
+                                    <div className="sub-avatar-mini" style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        {expandedSubs ? <Menu size={16} /> : <div style={{ fontSize: '14px' }}>+</div>}
+                                    </div>
+                                    <span className="nav-label">{expandedSubs ? 'Show Less' : `Show ${subscriptions.length - 4} More`}</span>
+                                </button>
                             )}
-                            {!collapsed && <span className="nav-label">{sub.title}</span>}
-                        </NavLink>
-                    ))}
-                    {!collapsed && subscriptions.length > 4 && (
-                        <button className="nav-item show-more-subs" onClick={() => setExpandedSubs(!expandedSubs)}>
-                            <div className="sub-avatar-mini" style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {expandedSubs ? <Menu size={16} /> : <div style={{ fontSize: '14px' }}>+</div>}
-                            </div>
-                            <span className="nav-label">{expandedSubs ? 'Show Less' : `Show ${subscriptions.length - 4} More`}</span>
-                        </button>
+                        </div>
                     )}
-                </div>
+
+                    <div className="nav-divider"></div>
+
+                    <div className="nav-section">
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '12px' }}>
+                            {!collapsed && <h4 className="nav-section-title">Playlists</h4>}
+                            {!collapsed && (
+                                <button
+                                    className="btn-icon mini-btn"
+                                    title="Import from YT"
+                                    onClick={() => {
+                                        setShowImportModal(true);
+                                        if (window.innerWidth < 1024) toggleNav();
+                                    }}
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            )}
+                        </div>
+                        {playlists.map((playlist) => (
+                            <NavLink
+                                key={playlist.id}
+                                to={`/playlist/${playlist.id}`}
+                                onClick={handleNavItemClick}
+                                className={({ isActive }) =>
+                                    `nav-item ${isActive ? 'active' : ''}`
+                                }
+                            >
+                                <ListVideo size={22} strokeWidth={2} />
+                                <span className="nav-label">{playlist.name}</span>
+                            </NavLink>
+                        ))}
+                    </div>
+                </>
             )}
-
-            <div className="nav-divider"></div>
-
-            <div className="nav-section">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingRight: '12px' }}>
-                    {!collapsed && <h4 className="nav-section-title">Playlists</h4>}
-                    {!collapsed && (
-                        <button
-                            className="btn-icon mini-btn"
-                            title="Import from YT"
-                            onClick={() => {
-                                setShowImportModal(true);
-                                if (window.innerWidth < 1024) toggleNav();
-                            }}
-                        >
-                            <Plus size={16} />
-                        </button>
-                    )}
-                </div>
-                {playlists.map((playlist) => (
-                    <NavLink
-                        key={playlist.id}
-                        to={`/playlist/${playlist.id}`}
-                        onClick={handleNavItemClick}
-                        className={({ isActive }) =>
-                            `nav-item ${isActive ? 'active' : ''}`
-                        }
-                    >
-                        <ListVideo size={22} strokeWidth={2} />
-                        <span className="nav-label">{playlist.name}</span>
-                    </NavLink>
-                ))}
-            </div>
 
             {showImportModal && (
                 <PlaylistModal
