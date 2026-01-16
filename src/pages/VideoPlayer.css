@@ -42,36 +42,24 @@
         margin: 0 auto;
     }
 
-    /* Theater Mode Styles - No :has for better compatibility */
-    .video-player-page.theater-mode-active {
-        flex-direction: column;
-        align-items: center;
-        padding: 0;
-        max-width: none;
+    .back-button-player-float {
+        display: none;
     }
 
-    .video-player-page.theater-mode-active .player-main-column {
-        max-width: none;
-        width: 100%;
-        background: #000;
+    .player-main-column {
+        flex: 1;
+        min-width: 0;
+        max-width: 1000px;
     }
 
-    .video-player-page.theater-mode-active .player-wrapper {
-        border-radius: 0;
-        max-height: calc(100vh - 120px);
-        width: 100%;
-        max-width: 1600px;
-        margin: 0 auto;
+    .related-videos-section {
+        width: 380px;
+        flex-shrink: 0;
     }
 
-    .video-player-page.theater-mode-active .related-videos-section {
-        width: 100%;
-        max-width: 1200px;
-        margin: 24px auto;
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 24px;
-        padding: 0 24px;
+    .player-wrapper {
+        border-radius: var(--radius-lg);
+        overflow: hidden;
     }
 }
 
@@ -95,7 +83,6 @@
     /* 16:9 */
     background: black;
     box-shadow: var(--shadow-lg);
-    transition: all 0.3s ease;
 }
 
 .player-wrapper iframe {
@@ -118,20 +105,35 @@
         padding: 0;
     }
 
-    .player-main-column {
-        flex: 1;
-        min-width: 0;
-        max-width: 1000px;
+    /* Theater Mode Styles */
+    .video-player-page:has(.player-main-column.theater) {
+        flex-direction: column;
+        align-items: center;
+        padding: 0;
     }
 
-    .related-videos-section {
-        width: 380px;
-        flex-shrink: 0;
+    .player-main-column.theater {
+        max-width: none;
+        width: 100%;
+        background: #000;
     }
 
-    .player-wrapper {
-        border-radius: var(--radius-lg);
-        overflow: hidden;
+    .player-main-column.theater .player-wrapper {
+        border-radius: 0;
+        max-height: calc(100vh - 150px);
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    .player-main-column.theater+.related-videos-section {
+        width: 100%;
+        max-width: 1100px;
+        margin: 24px auto;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 24px;
+        padding: 0 24px;
     }
 }
 

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Menu, X, User, LogIn, LogOut, CircleUser } from 'lucide-react';
+import { Search, Menu, X, User, LogIn, LogOut } from 'lucide-react';
 import { youtubeAPI } from '../services/youtube';
 import { authService } from '../services/firebase';
 import './TopBar.css';
 
-const TopBar = ({ toggleNav, collapsed }) => {
+const TopBar = ({ toggleNav }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -88,7 +88,7 @@ const TopBar = ({ toggleNav, collapsed }) => {
     };
 
     return (
-        <header className={`top-bar ${collapsed ? 'collapsed' : ''}`}>
+        <header className="top-bar">
             {/* Notch and status bar protection */}
             <div className="safe-area-top" />
 
@@ -163,9 +163,8 @@ const TopBar = ({ toggleNav, collapsed }) => {
                         </button>
                     </>
                 ) : (
-                    <button className="sign-in-btn" onClick={() => navigate('/login')}>
-                        <CircleUser size={20} />
-                        <span>Sign in</span>
+                    <button className="btn-icon" onClick={() => navigate('/login')} title="Sign In">
+                        <LogIn size={20} />
                     </button>
                 )}
             </div>

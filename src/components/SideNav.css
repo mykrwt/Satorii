@@ -1,6 +1,6 @@
 .side-nav {
     width: var(--sidebar-width);
-    height: calc(100vh - var(--header-height));
+    height: 100vh;
     background: var(--bg-secondary);
     border-right: 1px solid var(--border-color);
     display: flex;
@@ -24,10 +24,13 @@
     border-bottom: 1px solid transparent;
 }
 
-@media (min-width: 1025px) {
-    .nav-header {
-        display: none;
-    }
+.side-nav.collapsed .nav-header {
+    padding: 0;
+    justify-content: center;
+}
+
+.side-nav.collapsed .logo-container {
+    display: none;
 }
 
 .menu-toggle {
@@ -42,34 +45,6 @@
     overflow: hidden;
     white-space: nowrap;
     cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-/* On desktop, when collapsed, hide logo text but keep icon */
-@media (min-width: 1025px) {
-    .side-nav.collapsed .logo-container {
-        gap: 0;
-    }
-
-    .side-nav.collapsed .logo-text {
-        display: none;
-    }
-
-    .side-nav.collapsed .nav-header {
-        padding: 0 12px;
-    }
-}
-
-/* On mobile, hide entire logo when collapsed */
-@media (max-width: 1024px) {
-    .side-nav.collapsed .logo-container {
-        display: none;
-    }
-
-    .side-nav.collapsed .nav-header {
-        padding: 0;
-        justify-content: center;
-    }
 }
 
 .logo-img {
@@ -147,12 +122,8 @@
 
 .nav-item.active {
     background: var(--bg-tertiary);
-    color: #10fb10;
-    font-weight: 600;
-}
-
-.nav-item.active svg {
-    color: #10fb10;
+    color: var(--accent-primary);
+    font-weight: 500;
 }
 
 .nav-item svg {
@@ -215,10 +186,5 @@
     .side-nav.collapsed {
         transform: translateX(-100%);
         width: 0;
-    }
-
-    /* Hide the internal menu button on mobile to avoid double nav headers */
-    .mobile-hidden-btn {
-        display: none !important;
     }
 }

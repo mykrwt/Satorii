@@ -39,22 +39,15 @@ function AppContent() {
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
-        const handleResize = () => {
-            const mobile = window.innerWidth < 1024;
-            setIsMobile(mobile);
-            // On desktop, always keep nav open
-            if (!mobile) {
-                setNavCollapsed(false);
-            }
-        };
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
         window.addEventListener('resize', handleResize);
 
-        // Initialize: mobile = collapsed, desktop = open
-        const mobile = window.innerWidth < 1024;
-        setNavCollapsed(mobile);
+        if (window.innerWidth < 1024) {
+            setNavCollapsed(true);
+        }
 
         return () => {
             window.removeEventListener('online', handleOnline);
@@ -67,13 +60,6 @@ function AppContent() {
 
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
-            <TopBar toggleNav={toggleNav} collapsed={navCollapsed} />
-            {!isOnline && (
-                <div className="offline-banner">
-                    <span>⚠️ You're offline. Some features may not work.</span>
-                </div>
-            )}
-
             <div className="app-layout">
                 <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
 
@@ -82,6 +68,13 @@ function AppContent() {
                 )}
 
                 <main className="main-content">
+                    <TopBar toggleNav={toggleNav} />
+                    {!isOnline && (
+                        <div className="offline-banner">
+                            <span>⚠️ You're offline. Some features may not work.</span>
+                        </div>
+                    )}
+
                     <div className="page-scroll-container">
                         <Routes>
                             <Route path="/" element={<Home />} />

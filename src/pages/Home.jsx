@@ -352,7 +352,7 @@ const Home = () => {
                                 className={`category-chip ${selectedCategory === category.id ? 'active' : ''}`}
                                 onClick={() => handleCategoryClick(category.id)}
                             >
-                                {category.snippet?.title || 'Unknown'}
+                                {category.snippet.title}
                             </button>
                         ))}
                     </div>

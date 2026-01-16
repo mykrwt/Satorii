@@ -15,14 +15,7 @@ const STORAGE_KEYS = {
 const getItem = (key, defaultValue = null) => {
     try {
         const item = localStorage.getItem(key);
-        if (!item || item === 'undefined') return defaultValue;
-        const parsed = JSON.parse(item);
-
-        // Safety: Ensure we return the right type if defaultValue is an array
-        if (Array.isArray(defaultValue) && !Array.isArray(parsed)) {
-            return defaultValue;
-        }
-        return parsed;
+        return item ? JSON.parse(item) : defaultValue;
     } catch (error) {
         console.error(`Error reading ${key}:`, error);
         return defaultValue;
@@ -31,7 +24,6 @@ const getItem = (key, defaultValue = null) => {
 
 const setItem = (key, value) => {
     try {
-        if (value === undefined) return false;
         localStorage.setItem(key, JSON.stringify(value));
         return true;
     } catch (error) {

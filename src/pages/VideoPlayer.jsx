@@ -67,20 +67,6 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
     const observer = useRef();
 
     const iframeRef = useRef(null);
-    const scrollContainerRef = useRef(null);
-
-    // Sync theater mode class to parent 
-    useEffect(() => {
-        const container = document.querySelector('.page-scroll-container');
-        if (container) {
-            if (isTheaterMode) {
-                container.classList.add('theater-mode-parent');
-            } else {
-                container.classList.remove('theater-mode-parent');
-            }
-        }
-        return () => container?.classList.remove('theater-mode-parent');
-    }, [isTheaterMode]);
 
     useEffect(() => {
         if (videoId) {
@@ -370,7 +356,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
     }
 
     return (
-        <div className={`video-player-page ${isTheaterMode ? 'theater-mode-active' : ''}`}>
+        <div className="video-player-page">
             <div className={`player-main-column ${isTheaterMode ? 'theater' : ''}`}>
                 <div className="player-container">
                     <div className="player-wrapper">
@@ -379,7 +365,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                             src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}&controls=1&loop=0&playlist=${videoId}`}
                             title={video?.snippet?.title || "Video Player"}
                             frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; background-playback; fullscreen"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; background-playback"
                             allowFullScreen
                         ></iframe>
                         <button
@@ -395,7 +381,7 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                 <div className="video-info-section">
                     {video ? (
                         <>
-                            <h1 className="video-title-full">{video.snippet?.title || 'Untitled Video'}</h1>
+                            <h1 className="video-title-full">{video.snippet.title}</h1>
 
                             <div className="video-meta-row">
                                 <div className="channel-info" onClick={(e) => {
@@ -470,12 +456,11 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                                 {!showComments && comments.length > 0 && (
                                     <div className="comments-preview" onClick={() => setShowComments(true)}>
                                         {comments.slice(0, 2).map(commentThread => {
-                                            const comment = commentThread?.snippet?.topLevelComment?.snippet;
-                                            if (!comment) return null;
+                                            const comment = commentThread.snippet.topLevelComment.snippet;
                                             return (
                                                 <div key={commentThread.id} className="comment-preview-item">
-                                                    <span className="comment-author-preview">{comment.authorDisplayName || 'User'}:</span>
-                                                    <span className="comment-text-preview">{(comment.textOriginal || '').slice(0, 60)}{(comment.textOriginal || '').length > 60 ? '...' : ''}</span>
+                                                    <span className="comment-author-preview">{comment.authorDisplayName}:</span>
+                                                    <span className="comment-text-preview">{comment.textOriginal.slice(0, 60)}{comment.textOriginal.length > 60 ? '...' : ''}</span>
                                                 </div>
                                             );
                                         })}
@@ -487,17 +472,16 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                                     comments.length > 0 ? (
                                         <div className="comments-list animate-fade">
                                             {comments.map(commentThread => {
-                                                const comment = commentThread?.snippet?.topLevelComment?.snippet;
-                                                if (!comment) return null;
+                                                const comment = commentThread.snippet.topLevelComment.snippet;
                                                 return (
                                                     <div key={commentThread.id} className="comment-item">
-                                                        <img src={comment.authorProfileImageUrl || ''} alt="" className="comment-avatar" />
+                                                        <img src={comment.authorProfileImageUrl} alt="" className="comment-avatar" />
                                                         <div className="comment-content">
                                                             <div className="comment-header">
-                                                                <span className="comment-author">{comment.authorDisplayName || 'User'}</span>
-                                                                <span className="comment-date">{comment.publishedAt ? new Date(comment.publishedAt).toLocaleDateString() : ''}</span>
+                                                                <span className="comment-author">{comment.authorDisplayName}</span>
+                                                                <span className="comment-date">{new Date(comment.publishedAt).toLocaleDateString()}</span>
                                                             </div>
-                                                            <p className="comment-text">{comment.textOriginal || ''}</p>
+                                                            <p className="comment-text">{comment.textOriginal}</p>
                                                         </div>
                                                     </div>
                                                 );

@@ -31,16 +31,6 @@
     -webkit-overflow-scrolling: touch;
 }
 
-.page-scroll-container.theater-mode-parent {
-    padding: 0;
-    overflow-x: hidden;
-}
-
-.page-scroll-container.theater-mode-parent .video-player-page {
-    padding: 0;
-    max-width: none;
-}
-
 /* Scrollbar styling for the container */
 .page-scroll-container::-webkit-scrollbar {
     width: 8px;
