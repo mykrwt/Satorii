@@ -11,6 +11,7 @@ import {
     Settings
 } from 'lucide-react';
 import { authService } from '../services/firebase';
+import { playlistService, subscriptionService } from '../services/storage';
 import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
@@ -32,17 +33,25 @@ const SideNav = ({ collapsed, toggleNav }) => {
         setSubscriptions(subscriptionService.getAll());
 
         const interval = setInterval(() => {
-            const currentP = playlistService.getAll();
-            const currentS = subscriptionService.getAll();
+            try {
+                const currentP = playlistService.getAll();
+                const currentS = subscriptionService.getAll();
 
-            setPlaylists(prev => {
-                if (JSON.stringify(currentP) !== JSON.stringify(prev)) return currentP;
-                return prev;
-            });
-            setSubscriptions(prev => {
-                if (JSON.stringify(currentS) !== JSON.stringify(prev)) return currentS;
-                return prev;
-            });
+                if (Array.isArray(currentP)) {
+                    setPlaylists(prev => {
+                        if (JSON.stringify(currentP) !== JSON.stringify(prev)) return currentP;
+                        return prev;
+                    });
+                }
+                if (Array.isArray(currentS)) {
+                    setSubscriptions(prev => {
+                        if (JSON.stringify(currentS) !== JSON.stringify(prev)) return currentS;
+                        return prev;
+                    });
+                }
+            } catch (err) {
+                console.warn("Storage update failed", err);
+            }
         }, 3000);
         return () => clearInterval(interval);
     }, []);
@@ -64,7 +73,9 @@ const SideNav = ({ collapsed, toggleNav }) => {
     });
 
     const [expandedSubs, setExpandedSubs] = useState(false);
-    const displayedSubs = expandedSubs ? subscriptions : subscriptions.slice(0, 4);
+    const displayedSubs = Array.isArray(subscriptions)
+        ? (expandedSubs ? subscriptions : subscriptions.slice(0, 4))
+        : [];
 
     const [showImportModal, setShowImportModal] = useState(false);
 
@@ -124,7 +135,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                 <>
                     <div className="nav-divider"></div>
 
-                    {subscriptions.length > 0 && (
+                    {Array.isArray(subscriptions) && subscriptions.length > 0 && (
                         <div className="nav-section">
                             {!collapsed && <h4 className="nav-section-title">Subscriptions</h4>}
                             {displayedSubs.map((sub) => (
@@ -135,16 +146,16 @@ const SideNav = ({ collapsed, toggleNav }) => {
                                     className={({ isActive }) =>
                                         `nav-item ${isActive ? 'active' : ''}`
                                     }
-                                    title={sub.title}
+                                    title={sub.title || 'Untitled'}
                                 >
                                     {sub.thumbnail ? (
                                         <img src={sub.thumbnail} alt="" className="sub-avatar-img" style={{ width: '24px', height: '24px', borderRadius: '50%' }} />
                                     ) : (
                                         <div className="sub-avatar-mini" style={{ width: '24px', height: '24px', minWidth: '24px', borderRadius: '50%', background: 'var(--bg-tertiary)', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-primary)' }}>
-                                            {sub.title.charAt(0).toUpperCase()}
+                                            {(sub.title || '?').charAt(0).toUpperCase()}
                                         </div>
                                     )}
-                                    {!collapsed && <span className="nav-label">{sub.title}</span>}
+                                    {!collapsed && <span className="nav-label">{sub.title || 'Untitled'}</span>}
                                 </NavLink>
                             ))}
                             {!collapsed && subscriptions.length > 4 && (
@@ -176,7 +187,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                                 </button>
                             )}
                         </div>
-                        {playlists.map((playlist) => (
+                        {Array.isArray(playlists) && playlists.map((playlist) => (
                             <NavLink
                                 key={playlist.id}
                                 to={`/playlist/${playlist.id}`}
@@ -186,7 +197,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                                 }
                             >
                                 <ListVideo size={22} strokeWidth={2} />
-                                <span className="nav-label">{playlist.name}</span>
+                                <span className="nav-label">{playlist.name || 'Untitled Playlist'}</span>
                             </NavLink>
                         ))}
                     </div>

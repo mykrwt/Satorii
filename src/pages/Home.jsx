@@ -352,7 +352,7 @@ const Home = () => {
                                 className={`category-chip ${selectedCategory === category.id ? 'active' : ''}`}
                                 onClick={() => handleCategoryClick(category.id)}
                             >
-                                {category.snippet.title}
+                                {category.snippet?.title || 'Unknown'}
                             </button>
                         ))}
                     </div>
@@ -374,7 +374,7 @@ const Home = () => {
                     })}
                 </div>
                 {loadingMore && <div className="spinner-small" style={{ margin: '40px auto' }}></div>}
-                
+
                 {/* Show message if no videos after filtering */}
                 {videos.length === 0 && !initialLoading && !error && (
                     <div className="loading-container">
