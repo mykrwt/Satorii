@@ -71,10 +71,10 @@ function AppContent() {
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
             <Analytics />
-            <TopBar toggleNav={toggleNav} />
+            <TopBar toggleNav={toggleNav} user={user} />
 
             <div className="app-layout">
-                <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
+                <SideNav collapsed={navCollapsed} toggleNav={toggleNav} user={user} />
 
                 {!navCollapsed && isMobile && (
                     <div className="nav-backdrop" onClick={() => setNavCollapsed(true)}></div>
@@ -96,6 +96,7 @@ function AppContent() {
                             <Route path="/playlist/:playlistId" element={<Playlist />} />
                             <Route path="/library" element={<Library />} />
                             <Route path="/settings" element={<Settings />} />
+                            <Route path="/login" element={<Login />} />
 
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
