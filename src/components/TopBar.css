@@ -53,6 +53,10 @@
     .logo-section {
         display: none !important;
     }
+
+    .menu-btn-mobile {
+        display: none !important;
+    }
 }
 
 @media (max-width: 1024px) {

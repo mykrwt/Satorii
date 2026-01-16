@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
     Home,
     Search,
@@ -15,6 +15,7 @@ import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
 const SideNav = ({ collapsed, toggleNav }) => {
+    const navigate = useNavigate();
     const [playlists, setPlaylists] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
 
@@ -66,7 +67,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
                     <Menu size={22} />
                 </button>
                 {!collapsed && (
-                    <div className="logo-container">
+                    <div className="logo-container" onClick={() => navigate('/')}>
                         <img src="/satorii.png" alt="Logo" className="logo-img" />
                         <span className="logo-text">Satorii</span>
                     </div>
