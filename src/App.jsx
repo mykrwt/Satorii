@@ -67,6 +67,13 @@ function AppContent() {
 
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
+            <TopBar toggleNav={toggleNav} />
+            {!isOnline && (
+                <div className="offline-banner">
+                    <span>⚠️ You're offline. Some features may not work.</span>
+                </div>
+            )}
+
             <div className="app-layout">
                 <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
 
@@ -75,13 +82,6 @@ function AppContent() {
                 )}
 
                 <main className="main-content">
-                    <TopBar toggleNav={toggleNav} />
-                    {!isOnline && (
-                        <div className="offline-banner">
-                            <span>⚠️ You're offline. Some features may not work.</span>
-                        </div>
-                    )}
-
                     <div className="page-scroll-container">
                         <Routes>
                             <Route path="/" element={<Home />} />

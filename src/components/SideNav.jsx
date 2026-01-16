@@ -58,6 +58,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
 
     const navItems = [
         { path: '/', icon: Home, label: 'Home' },
+        { path: '/shorts', icon: ListVideo, label: 'Shorts' },
     ];
 
     const secondaryItems = [
@@ -116,6 +117,7 @@ const SideNav = ({ collapsed, toggleNav }) => {
             <div className="nav-divider"></div>
 
             <div className="nav-section">
+                {!collapsed && <h4 className="nav-section-title">More</h4>}
                 {visibleSecondaryItems.map((item) => (
                     <NavLink
                         key={item.path}

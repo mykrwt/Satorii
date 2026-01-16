@@ -26,6 +26,11 @@
     gap: 12px;
     cursor: pointer;
     user-select: none;
+    transition: opacity 0.2s;
+}
+
+.logo-section:hover {
+    opacity: 0.9;
 }
 
 .user-profile-mini {
@@ -46,16 +51,12 @@
 }
 
 .menu-btn-mobile {
-    display: none;
-}
-
-.logo-section {
-    display: none !important;
+    display: flex;
 }
 
 @media (min-width: 1025px) {
     .menu-btn-mobile {
-        display: none !important;
+        margin-right: 12px;
     }
 }
 
@@ -84,10 +85,23 @@
 }
 
 .logo-text {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     letter-spacing: -0.5px;
+    font-family: 'Outfit', 'Inter', sans-serif;
     color: var(--text-primary);
+}
+
+@media (min-width: 1025px) {
+    .logo-text {
+        color: #10fb10;
+        text-shadow: 0 0 10px rgba(16, 251, 16, 0.4), 0 0 20px rgba(16, 251, 16, 0.1);
+    }
+}
+
+.logo-icon {
+    height: 30px;
+    filter: brightness(1.2);
 }
 
 .top-bar-center {
