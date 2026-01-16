@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
-import Home from './pages/Home/Home';
-import Search from './pages/Search/Search';
-import VideoPlayer from './pages/VideoPlayer/VideoPlayer';
-import Channel from './pages/Channel/Channel';
-import Playlist from './pages/Playlist/Playlist';
-import Library from './pages/Library/Library';
-import Settings from './pages/Settings/Settings';
-import Login from './pages/Login/Login';
-import SideNav from './components/layout/SideNav';
-import TopBar from './components/layout/TopBar';
-import { authService } from './services/firebase';
-import './styles/App.css';
+import Home from './pages/Home';
+import Search from './pages/Search';
+import VideoPlayer from './pages/VideoPlayer';
+import Channel from './pages/Channel';
+import Playlist from './pages/Playlist';
+import Library from './pages/Library';
+import Settings from './pages/Settings';
+import HardTestSearch from './pages/HardTestSearch';
+import SideNav from './components/SideNav';
+import TopBar from './components/TopBar';
+import './App.css';
 
 // Global Player State & Persistent Rendering
 function AppContent() {
@@ -25,16 +24,6 @@ function AppContent() {
     // Persistent Player State
     const [activeVideoId, setActiveVideoId] = useState(null);
     const [miniPlayerClosed, setMiniPlayerClosed] = useState(false);
-    const [user, setUser] = useState(null);
-    const [authLoading, setAuthLoading] = useState(true);
-
-    useEffect(() => {
-        const unsubscribe = authService.subscribe((user) => {
-            setUser(user);
-            setAuthLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
 
     const isWatchPage = location.pathname.startsWith('/watch/');
     const currentPathVideoId = isWatchPage ? location.pathname.split('/watch/')[1] : null;
@@ -71,10 +60,10 @@ function AppContent() {
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
             <Analytics />
-            <TopBar toggleNav={toggleNav} user={user} />
+            <TopBar toggleNav={toggleNav} />
 
             <div className="app-layout">
-                <SideNav collapsed={navCollapsed} toggleNav={toggleNav} user={user} />
+                <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
 
                 {!navCollapsed && isMobile && (
                     <div className="nav-backdrop" onClick={() => setNavCollapsed(true)}></div>
@@ -96,8 +85,7 @@ function AppContent() {
                             <Route path="/playlist/:playlistId" element={<Playlist />} />
                             <Route path="/library" element={<Library />} />
                             <Route path="/settings" element={<Settings />} />
-                            <Route path="/login" element={<Login />} />
-
+                            <Route path="/hard-test-search" element={<HardTestSearch />} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </div>
