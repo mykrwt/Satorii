@@ -66,12 +66,10 @@ const SideNav = ({ collapsed, toggleNav }) => {
                 <button className="btn-icon menu-toggle" onClick={toggleNav}>
                     <Menu size={22} />
                 </button>
-                {!collapsed && (
-                    <div className="logo-container" onClick={() => navigate('/')}>
-                        <img src="/satorii.png" alt="Logo" className="logo-img" />
-                        <span className="logo-text">Satorii</span>
-                    </div>
-                )}
+                <div className="logo-container" onClick={() => navigate('/')}>
+                    <img src="/satorii.png" alt="Logo" className="logo-img" />
+                    <span className="logo-text">Satorii</span>
+                </div>
             </div>
 
             <div className="nav-section">

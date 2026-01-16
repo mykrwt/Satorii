@@ -39,15 +39,22 @@ function AppContent() {
     useEffect(() => {
         const handleOnline = () => setIsOnline(true);
         const handleOffline = () => setIsOnline(false);
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => {
+            const mobile = window.innerWidth < 1024;
+            setIsMobile(mobile);
+            // On desktop, always keep nav open
+            if (!mobile) {
+                setNavCollapsed(false);
+            }
+        };
 
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
         window.addEventListener('resize', handleResize);
 
-        if (window.innerWidth < 1024) {
-            setNavCollapsed(true);
-        }
+        // Initialize: mobile = collapsed, desktop = open
+        const mobile = window.innerWidth < 1024;
+        setNavCollapsed(mobile);
 
         return () => {
             window.removeEventListener('online', handleOnline);

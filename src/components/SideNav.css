@@ -24,15 +24,6 @@
     border-bottom: 1px solid transparent;
 }
 
-.side-nav.collapsed .nav-header {
-    padding: 0;
-    justify-content: center;
-}
-
-.side-nav.collapsed .logo-container {
-    display: none;
-}
-
 .menu-toggle {
     flex-shrink: 0;
 }
@@ -45,6 +36,34 @@
     overflow: hidden;
     white-space: nowrap;
     cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+/* On desktop, when collapsed, hide logo text but keep icon */
+@media (min-width: 1025px) {
+    .side-nav.collapsed .logo-container {
+        gap: 0;
+    }
+
+    .side-nav.collapsed .logo-text {
+        display: none;
+    }
+
+    .side-nav.collapsed .nav-header {
+        padding: 0 12px;
+    }
+}
+
+/* On mobile, hide entire logo when collapsed */
+@media (max-width: 1024px) {
+    .side-nav.collapsed .logo-container {
+        display: none;
+    }
+
+    .side-nav.collapsed .nav-header {
+        padding: 0;
+        justify-content: center;
+    }
 }
 
 .logo-img {
