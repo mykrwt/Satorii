@@ -334,8 +334,13 @@ export const youtubeAPI = {
 
     // Get related videos (Smart Fallback)
     getRelatedVideos: async (videoId, maxResults = 20, pageToken = null, titleFallback = '') => {
-        // Try strict relation first
+        const cacheKey = `related_${videoId}_${pageToken}`;
+        const cached = getCached(cacheKey);
+        if (cached) return cached;
+
+        // 1. Try strict relation first (YouTube Data API v3 has deprecated/restricted this significantly)
         try {
+            console.log(`🔗 Attempting strict related search for ${videoId}`);
             const response = await api.get('/search', {
                 params: {
                     part: 'snippet',
@@ -346,44 +351,41 @@ export const youtubeAPI = {
                 },
             });
 
-            // If strict returns ample results, return them
-            if (response.data.items && response.data.items.length > 5) {
+            if (response.data.items && response.data.items.length >= 10) {
+                setCache(cacheKey, response.data);
                 return response.data;
             }
 
-            // Otherwise, combine or fallback to title search if provided
-            if (titleFallback) {
+            console.log('⚠️ Strict related search returned low results, trying title fallback');
+        } catch (error) {
+            console.warn('❌ Strict related fetch failed (Deprecated/Quota/Restricted):', error.message);
+        }
+
+        // 2. Fallback to Title Search (Much more reliable)
+        if (titleFallback) {
+            try {
+                console.log(`🔎 Falling back to title search: "${titleFallback}"`);
                 const searchResp = await api.get('/search', {
                     params: {
                         part: 'snippet',
                         q: titleFallback,
                         type: 'video',
                         maxResults,
+                        pageToken,
                     },
                 });
-                return searchResp.data;
-            }
 
-            return response.data;
-        } catch (error) {
-            console.warn('Strict related fetch failed, failing over to search if possible.', error);
-            if (titleFallback) {
-                try {
-                    const searchResp = await api.get('/search', {
-                        params: {
-                            part: 'snippet',
-                            q: titleFallback,
-                            type: 'video',
-                            maxResults,
-                        },
-                    });
+                // Mix in the videoId to help it be more relevant if it's a series
+                if (searchResp.data.items) {
+                    setCache(cacheKey, searchResp.data);
                     return searchResp.data;
-                } catch (err) {
-                    throw err;
                 }
+            } catch (err) {
+                console.error('💥 Title fallback search also failed:', err);
             }
-            throw error;
         }
+
+        return { items: [], nextPageToken: null };
     },
 
     // Get detailed video data for a list of IDs (Enrichment)
@@ -418,6 +420,7 @@ export const youtubeAPI = {
         if (cached) return cached;
 
         try {
+            console.log(`💬 Fetching comments for ${videoId}`);
             const response = await api.get('/commentThreads', {
                 params: {
                     part: 'snippet',
@@ -429,8 +432,8 @@ export const youtubeAPI = {
             setCache(cacheKey, response.data);
             return response.data;
         } catch (error) {
-            console.error('Comments fetch failed:', error);
-            throw error;
+            console.warn('⚠️ Comments fetch failed (Disabled/Quota/Restricted):', error.message);
+            return { items: [], nextPageToken: null };
         }
     },
 
