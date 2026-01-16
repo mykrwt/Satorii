@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="description" content="Satorii - Premium YouTube experience with advanced features">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/png" href="/satorii.png">
+  <link rel="apple-touch-icon" href="/satorii.png">
+  <title>Satorii</title>
+  <script>
+    // SPOOF VISIBILITY: Keep YouTube thinking we are always active
+    Object.defineProperty(document, 'visibilityState', { get: () => 'visible', configurable: true });
+    Object.defineProperty(document, 'hidden', { get: () => false, configurable: true });
+
+    window.addEventListener('visibilitychange', (e) => {
+      e.stopImmediatePropagation();
+    }, true);
+
+    // PRO BACKGROUND SYNC: Silent Audio Keep-Alive
+    // Using a tiny silent WAV file to keep the OS media thread alive
+    const silentWav = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhAAQACABAAAABkYXRhAgAAAAEA';
+    window.keepAliveAudio = new Audio(silentWav);
+    window.keepAliveAudio.loop = true;
+    window.keepAliveAudio.volume = 0;
+
+    // Most browsers block audio until a click
+    window.addEventListener('click', () => {
+      window.keepAliveAudio.play().then(() => {
+        // Pause immediately - it's just to "warm up" the audio engine
+        window.keepAliveAudio.pause();
+      }).catch(() => { });
+    }, { once: true });
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

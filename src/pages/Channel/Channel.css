@@ -1,0 +1,307 @@
+.channel-page {
+    width: 100%;
+    padding-bottom: 40px;
+}
+
+.channel-banner {
+    width: 100%;
+    aspect-ratio: 6.25;
+    /* Standard YouTube banner ratio roughly */
+    background: var(--bg-tertiary);
+    overflow: hidden;
+    position: relative;
+}
+
+.channel-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, var(--bg-elevated), var(--bg-secondary));
+}
+
+.channel-header {
+    padding: 32px 50px;
+    background: var(--bg-primary);
+}
+
+.channel-header-content {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.channel-avatar-xl {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 4px solid var(--bg-primary);
+    /* Usually avatars overlap banner? Not always, keeping it simpler for now */
+}
+
+.channel-avatar-xl img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.channel-details-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 12px;
+    gap: 8px;
+}
+
+.channel-title-xl {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.channel-meta-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.meta-dot {
+    font-weight: 800;
+    font-size: 8px;
+}
+
+.channel-desc-short {
+    color: var(--text-tertiary);
+    font-size: 14px;
+    max-width: 700px;
+    line-height: 1.5;
+    margin-top: 4px;
+}
+
+.channel-actions-xl {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.subscribe-btn-xl {
+    padding: 0 32px;
+    height: 40px;
+    font-size: 15px;
+    border-radius: var(--radius-full);
+}
+
+.btn-notification {
+    background: var(--bg-tertiary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tabs */
+.channel-tabs-sticky {
+    position: relative;
+    background: transparent;
+    z-index: 10;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 50px;
+}
+
+.channel-tabs {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    gap: 32px;
+}
+
+.tab-item {
+    background: none;
+    border: none;
+    padding: 16px 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    text-transform: uppercase;
+}
+
+.tab-item:hover {
+    color: var(--text-primary);
+}
+
+.tab-item.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--text-primary);
+}
+
+.channel-content {
+    padding: 24px 50px;
+    max-width: 1380px;
+    margin: 0 auto;
+}
+
+.section-heading {
+    margin-bottom: 24px;
+}
+
+.empty-tab-state {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--text-tertiary);
+}
+
+.channel-playlists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.channel-playlist-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    cursor: pointer;
+    overflow: hidden;
+    text-align: left;
+    color: var(--text-primary);
+    transition: transform var(--transition-smooth), background var(--transition-smooth);
+}
+
+.channel-playlist-card:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-1px);
+}
+
+.channel-playlist-thumb img,
+.playlist-thumb-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
+.playlist-thumb-placeholder {
+    background: var(--bg-tertiary);
+}
+
+.channel-playlist-meta {
+    padding: 12px;
+}
+
+.channel-playlist-title {
+    margin: 0 0 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+}
+
+.channel-playlist-count {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.channel-load-more-row {
+    margin-top: 22px;
+    display: flex;
+    justify-content: center;
+}
+
+.channel-about {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 860px;
+}
+
+.channel-about-description {
+    white-space: pre-line;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.channel-about-muted {
+    color: var(--text-tertiary);
+}
+
+.channel-about-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    background: var(--bg-secondary);
+}
+
+.about-stat-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.about-stat-label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.about-stat-value {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .channel-header {
+        padding: 16px;
+    }
+
+    .channel-header-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 16px;
+    }
+
+    .channel-avatar-xl {
+        width: 100px;
+        height: 100px;
+    }
+
+    .channel-meta-text {
+        justify-content: center;
+    }
+
+    .channel-actions-xl {
+        justify-content: center;
+    }
+
+    .channel-tabs-sticky,
+    .channel-content {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .channel-tabs {
+        gap: 20px;
+        overflow-x: auto;
+    }
+}

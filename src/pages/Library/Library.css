@@ -1,0 +1,235 @@
+.library-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+}
+
+.library-header {
+    margin-bottom: 32px;
+}
+
+.library-tabs {
+    display: none;
+    /* Removed tabs */
+}
+
+.history-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.library-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.library-tab {
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.library-tab:hover {
+    background: var(--hover-white);
+    color: var(--text-primary);
+}
+
+.library-tab.active {
+    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+}
+
+.tab-icon {
+    font-size: 18px;
+}
+
+/* Content Layout */
+.content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.content-header h2 {
+    font-size: 24px;
+    color: var(--text-primary);
+}
+
+.count-badge {
+    padding: 4px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+/* Grids */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.playlists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 24px;
+}
+
+/* Playlist Cards */
+.playlist-card {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.playlist-card:hover {
+    transform: translateY(-4px);
+}
+
+.playlist-thumbnail {
+    position: relative;
+    aspect-ratio: 16/9;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+.playlist-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.playlist-empty-thumb {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+}
+
+.playlist-overlay {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    background: rgba(17, 20, 16, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    z-index: 2;
+}
+
+.playlist-count {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.playlist-icon {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.playlist-name {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.playlist-meta-info {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+/* Import / Create Forms */
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.import-box,
+.create-playlist-form {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.library-input {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.library-input:focus {
+    border-color: var(--accent-secondary);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Empty States */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    text-align: center;
+    gap: 16px;
+}
+
+.empty-icon-large {
+    font-size: 64px;
+    opacity: 0.3;
+}
+
+.empty-state h2 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+    max-width: 300px;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .library-tabs {
+        margin: 0 -16px 24px -16px;
+        padding: 0 16px 8px 16px;
+    }
+
+    .video-grid {
+        grid-template-columns: 1fr;
+    }
+}

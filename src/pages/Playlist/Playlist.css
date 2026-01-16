@@ -1,0 +1,277 @@
+.playlist-page {
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.playlist-header {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 32px;
+    align-items: flex-end;
+}
+
+.playlist-cover {
+    width: 240px;
+    height: 240px;
+    flex-shrink: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    background: var(--bg-tertiary);
+}
+
+.playlist-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.empty-cover {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+    background: var(--bg-elevated);
+}
+
+.playlist-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 8px;
+    /* Visual balance */
+}
+
+.playlist-title {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin: 0;
+}
+
+.playlist-stats {
+    font-size: 14px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.playlist-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+/* Video List */
+/* Global Video List Structure in Playlist */
+.playlist-video-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.playlist-item-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid transparent;
+    transition: background 0.2s;
+}
+
+.playlist-item-wrapper:hover {
+    background: rgba(222, 209, 189, 0.1);
+    border-radius: var(--radius-md);
+}
+
+.item-index-ref {
+    width: 32px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.playlist-video-list .video-card.list {
+    flex: 1;
+}
+
+.playlist-item:hover .item-menu-btn {
+    opacity: 1;
+}
+
+.item-menu-btn:hover {
+    color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .playlist-page {
+        padding: 16px;
+    }
+
+    .playlist-header {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .playlist-cover {
+        width: 180px;
+        height: 180px;
+    }
+
+    .playlist-title {
+        font-size: 28px;
+    }
+
+    .playlist-item-wrapper {
+        gap: 12px;
+    }
+
+    .item-index-ref {
+        width: 20px;
+        font-size: 13px;
+    }
+
+    /* Playlist Actions on Mobile - Overflow handling */
+    .playlist-actions {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px; /* Space for scrollbar */
+    }
+
+    .playlist-actions::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .playlist-actions::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: 2px;
+    }
+
+    .playlist-actions::-webkit-scrollbar-thumb {
+        background: var(--bg-tertiary);
+        border-radius: 2px;
+    }
+    
+    .btn-premium.filled,
+    .btn-premium.danger {
+        padding: 8px 16px;
+        font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    
+    /* Target VideoCard internal on mobile */
+    .playlist-video-list .video-card.list .video-thumbnail {
+        width: 120px;
+        min-width: 120px;
+        height: 68px;
+    }
+}
+
+/* Playlist Action Buttons Styles */
+.playlist-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+
+.btn-premium.filled {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border: 1px solid var(--accent-primary);
+    padding: 10px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-premium.filled:hover {
+    background: var(--accent-secondary);
+    border-color: var(--accent-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 157, 96, 0.2);
+}
+
+.btn-premium.danger {
+    background: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+    padding: 10px 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-premium.danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.delete-confirm-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    min-width: 300px;
+}
+
+.delete-confirm-dialog p {
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.confirm-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.confirm-actions button {
+    padding: 6px 16px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.confirm-actions button:last-child {
+    background: var(--danger);
+    color: white;
+    border-color: var(--danger);
+}
+
+.confirm-actions button:hover {
+    opacity: 0.9;
+}
