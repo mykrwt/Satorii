@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
-import Home from './pages/Home/Home';
-import Search from './pages/Search/Search';
-import VideoPlayer from './pages/VideoPlayer/VideoPlayer';
-import Channel from './pages/Channel/Channel';
-import Playlist from './pages/Playlist/Playlist';
-import Library from './pages/Library/Library';
-import Settings from './pages/Settings/Settings';
-import Login from './pages/Login/Login';
-import SideNav from './components/layout/SideNav';
-import TopBar from './components/layout/TopBar';
-import { authService } from './services/firebase';
-import './styles/App.css';
+import Home from '@pages/Home';
+import Search from '@pages/Search';
+import VideoPlayer from '@pages/VideoPlayer';
+import Channel from '@pages/Channel';
+import Playlist from '@pages/Playlist';
+import Library from '@pages/Library';
+import Settings from '@pages/Settings';
+import Login from '@pages/Login/Login';
+import SideNav from '@components/SideNav';
+import TopBar from '@components/TopBar';
+import { authService } from '@services/firebase';
+import './App.css';
 
 // Global Player State & Persistent Rendering
 function AppContent() {

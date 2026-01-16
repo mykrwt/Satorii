@@ -62,6 +62,16 @@ export default defineConfig({
       }
     })
   ],
+  resolve: {
+    alias: {
+      '@': '/src',
+      '@components': '/src/components',
+      '@pages': '/src/pages',
+      '@services': '/src/services',
+      '@utils': '/src/utils',
+      '@styles': '/src/styles'
+    }
+  },
   server: {
     port: 3000,
     host: true
