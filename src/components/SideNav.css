@@ -24,10 +24,14 @@
     border-bottom: 1px solid transparent;
 }
 
-@media (min-width: 1025px) {
-    .nav-header {
-        display: none;
-    }
+/* .nav-header visible on all screens now */
+.side-nav.collapsed .nav-header {
+    padding: 0;
+    justify-content: center;
+}
+
+.side-nav.collapsed .logo-container {
+    display: none;
 }
 
 .menu-toggle {

@@ -11,6 +11,7 @@ import Settings from './pages/Settings';
 import HardTestSearch from './pages/HardTestSearch';
 import SideNav from './components/SideNav';
 import TopBar from './components/TopBar';
+import Login from './pages/Login';
 import './App.css';
 
 // Global Player State & Persistent Rendering
@@ -59,9 +60,6 @@ function AppContent() {
 
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
-            <Analytics />
-            <TopBar toggleNav={toggleNav} />
-
             <div className="app-layout">
                 <SideNav collapsed={navCollapsed} toggleNav={toggleNav} />
 
@@ -70,6 +68,7 @@ function AppContent() {
                 )}
 
                 <main className="main-content">
+                    <TopBar toggleNav={toggleNav} />
                     {!isOnline && (
                         <div className="offline-banner">
                             <span>⚠️ You're offline. Some features may not work.</span>
@@ -85,6 +84,7 @@ function AppContent() {
                             <Route path="/playlist/:playlistId" element={<Playlist />} />
                             <Route path="/library" element={<Library />} />
                             <Route path="/settings" element={<Settings />} />
+                            <Route path="/login" element={<Login />} />
                             <Route path="/hard-test-search" element={<HardTestSearch />} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>

@@ -8,15 +8,27 @@ import {
     Clock,
     ListVideo,
     Plus,
-    Settings
+    Settings,
+    LogIn,
+    LogOut,
+    User
 } from 'lucide-react';
 import { playlistService, subscriptionService } from '../services/storage';
+import { authService } from '../services/firebase';
 import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
 const SideNav = ({ collapsed, toggleNav }) => {
     const [playlists, setPlaylists] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = authService.subscribe((user) => {
+            setUser(user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         setPlaylists(playlistService.getAll());
@@ -61,17 +73,17 @@ const SideNav = ({ collapsed, toggleNav }) => {
 
     return (
         <nav className={`side-nav ${collapsed ? 'collapsed' : ''}`}>
-            {!collapsed && (
-                <div className="nav-header">
-                    <button className="btn-icon menu-toggle" onClick={toggleNav}>
-                        <Menu size={22} />
-                    </button>
+            <div className={`nav-header ${collapsed ? 'collapsed' : ''}`}>
+                <button className="btn-icon menu-toggle" onClick={toggleNav}>
+                    <Menu size={22} />
+                </button>
+                {!collapsed && (
                     <div className="logo-container">
                         <img src="/satorii.png" alt="Logo" className="logo-img" />
                         <span className="logo-text">Satorii</span>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             <div className="nav-section">
                 {navItems.map((item) => (
@@ -105,6 +117,24 @@ const SideNav = ({ collapsed, toggleNav }) => {
                         <span className="nav-label">{item.label}</span>
                     </NavLink>
                 ))}
+                {user ? (
+                    <button
+                        className="nav-item"
+                        onClick={() => authService.logout()}
+                    >
+                        <LogOut size={22} strokeWidth={2} />
+                        <span className="nav-label">Sign Out</span>
+                    </button>
+                ) : (
+                    <NavLink
+                        to="/login"
+                        onClick={handleNavItemClick}
+                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+                    >
+                        <LogIn size={22} strokeWidth={2} />
+                        <span className="nav-label">Sign In</span>
+                    </NavLink>
+                )}
             </div>
 
             <div className="nav-divider"></div>
