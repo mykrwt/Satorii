@@ -390,7 +390,17 @@ export const youtubeAPI = {
             }
         }
 
-        // 3. Last Resort: Just return empty or trending if everything else fails
+        // 3. Last Resort: Return Trending Videos
+        try {
+            console.log('🔥 Last Resort: Fetching trending videos for "Up Next"');
+            const trending = await this.getTrending('US', 10);
+            if (trending && trending.items && trending.items.length > 0) {
+                return trending;
+            }
+        } catch (err) {
+            console.warn('❌ Final fallback failed:', err);
+        }
+
         return { items: [], nextPageToken: null };
     },
 
