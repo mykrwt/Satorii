@@ -8,7 +8,7 @@ import Channel from '@pages/Channel';
 import Playlist from '@pages/Playlist';
 import Library from '@pages/Library';
 import Settings from '@pages/Settings';
-import Login from '@pages/Login/Login';
+import Login from '@pages/Login';
 import SideNav from '@components/SideNav';
 import TopBar from '@components/TopBar';
 import { authService } from '@services/firebase';
