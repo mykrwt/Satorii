@@ -8,27 +8,15 @@ import {
     Clock,
     ListVideo,
     Plus,
-    Settings,
-    LogIn,
-    LogOut,
-    User
+    Settings
 } from 'lucide-react';
 import { playlistService, subscriptionService } from '../services/storage';
-import { authService } from '../services/firebase';
 import PlaylistModal from './PlaylistModal';
 import './SideNav.css';
 
 const SideNav = ({ collapsed, toggleNav }) => {
     const [playlists, setPlaylists] = useState([]);
     const [subscriptions, setSubscriptions] = useState([]);
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const unsubscribe = authService.subscribe((user) => {
-            setUser(user);
-        });
-        return () => unsubscribe();
-    }, []);
 
     useEffect(() => {
         setPlaylists(playlistService.getAll());
@@ -117,24 +105,6 @@ const SideNav = ({ collapsed, toggleNav }) => {
                         <span className="nav-label">{item.label}</span>
                     </NavLink>
                 ))}
-                {user ? (
-                    <button
-                        className="nav-item"
-                        onClick={() => authService.logout()}
-                    >
-                        <LogOut size={22} strokeWidth={2} />
-                        <span className="nav-label">Sign Out</span>
-                    </button>
-                ) : (
-                    <NavLink
-                        to="/login"
-                        onClick={handleNavItemClick}
-                        className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
-                    >
-                        <LogIn size={22} strokeWidth={2} />
-                        <span className="nav-label">Sign In</span>
-                    </NavLink>
-                )}
             </div>
 
             <div className="nav-divider"></div>

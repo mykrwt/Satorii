@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, Menu, X } from 'lucide-react';
+import { Search, Menu, X, User, LogIn, LogOut } from 'lucide-react';
 import { youtubeAPI } from '../services/youtube';
+import { authService } from '../services/firebase';
 import './TopBar.css';
 
 const TopBar = ({ toggleNav }) => {
@@ -13,6 +14,14 @@ const TopBar = ({ toggleNav }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [isFocused, setIsFocused] = useState(false);
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = authService.subscribe((user) => {
+            setUser(user);
+        });
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         if (location.pathname === '/search') {
@@ -87,7 +96,7 @@ const TopBar = ({ toggleNav }) => {
                 <button className="btn-icon menu-btn-mobile" onClick={toggleNav}>
                     <Menu size={22} />
                 </button>
-                <div className="logo-section mobile-hidden" onClick={() => navigate('/')}>
+                <div className="logo-section" onClick={() => navigate('/')}>
                     <img src="/satorii.png" alt="Satorii" className="logo-icon" />
                     <span className="logo-text">Satorii</span>
                 </div>
@@ -143,8 +152,21 @@ const TopBar = ({ toggleNav }) => {
                 </div>
             </div>
 
-            <div className="top-bar-right desktop-only">
-                {/* Space for future desktop items or user avatar */}
+            <div className="top-bar-right">
+                {user ? (
+                    <>
+                        <div className="user-profile-mini" title={user.email}>
+                            <User size={20} />
+                        </div>
+                        <button className="btn-icon" onClick={() => authService.logout()} title="Sign Out">
+                            <LogOut size={20} />
+                        </button>
+                    </>
+                ) : (
+                    <button className="btn-icon" onClick={() => navigate('/login')} title="Sign In">
+                        <LogIn size={20} />
+                    </button>
+                )}
             </div>
         </header>
     );

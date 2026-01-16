@@ -28,14 +28,31 @@
     user-select: none;
 }
 
-@media (min-width: 1025px) {
-    .logo-section {
-        display: none;
-    }
+.user-profile-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-profile-mini:hover {
+    background: var(--bg-elevated);
 }
 
 .menu-btn-mobile {
     display: none;
+}
+
+@media (min-width: 1025px) {
+    .logo-section {
+        display: none !important;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -256,10 +273,7 @@
 
     .top-bar-right {
         min-width: 0;
-    }
-
-    .desktop-only {
-        display: none !important;
+        display: flex !important;
     }
 
     .search-suggestions-dropdown {
