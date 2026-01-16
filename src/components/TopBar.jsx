@@ -14,7 +14,7 @@ const TopBar = ({ toggleNav }) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [isFocused, setIsFocused] = useState(false);
-    const [user, setUser] = useState(null);
+    const [showUserMenu, setShowUserMenu] = useState(false);
 
     useEffect(() => {
         const unsubscribe = authService.subscribe((user) => {
@@ -22,6 +22,14 @@ const TopBar = ({ toggleNav }) => {
         });
         return () => unsubscribe();
     }, []);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        if (!showUserMenu) return;
+        const closeMenu = () => setShowUserMenu(false);
+        window.addEventListener('click', closeMenu);
+        return () => window.removeEventListener('click', closeMenu);
+    }, [showUserMenu]);
 
     useEffect(() => {
         if (location.pathname === '/search') {
@@ -45,6 +53,11 @@ const TopBar = ({ toggleNav }) => {
         const timer = setTimeout(fetchSuggestions, 300); // 300ms debounce
         return () => clearTimeout(timer);
     }, [searchInput, isFocused]);
+
+    const handleLogout = async () => {
+        await authService.logout();
+        navigate('/login');
+    };
 
     const handleSearch = (e, customQuery = null) => {
         if (e) e.preventDefault();
@@ -154,14 +167,31 @@ const TopBar = ({ toggleNav }) => {
 
             <div className="top-bar-right">
                 {user ? (
-                    <>
-                        <div className="user-profile-mini" title={user.email}>
+                    <div className="user-menu-wrapper">
+                        <div
+                            className="user-profile-mini active"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setShowUserMenu(!showUserMenu);
+                            }}
+                            title={user.email}
+                        >
                             <User size={20} />
                         </div>
-                        <button className="btn-icon" onClick={() => authService.logout()} title="Sign Out">
-                            <LogOut size={20} />
-                        </button>
-                    </>
+
+                        {showUserMenu && (
+                            <div className="user-dropdown-menu animate-pop">
+                                <div className="user-dropdown-info">
+                                    <span className="user-email">{user.email}</span>
+                                </div>
+                                <div className="user-dropdown-divider"></div>
+                                <button className="dropdown-item" onClick={handleLogout}>
+                                    <LogOut size={16} />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <button className="btn-icon" onClick={() => navigate('/login')} title="Sign In">
                         <LogIn size={20} />

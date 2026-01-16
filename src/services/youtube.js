@@ -338,7 +338,7 @@ export const youtubeAPI = {
         const cached = getCached(cacheKey);
         if (cached) return cached;
 
-        // 1. Try strict relation first (YouTube Data API v3 has deprecated/restricted this significantly)
+        // 1. Try strict relation first
         try {
             console.log(`🔗 Attempting strict related search for ${videoId}`);
             const response = await api.get('/search', {
@@ -351,40 +351,46 @@ export const youtubeAPI = {
                 },
             });
 
-            if (response.data.items && response.data.items.length >= 10) {
+            if (response.data.items && response.data.items.length >= 5) {
                 setCache(cacheKey, response.data);
                 return response.data;
             }
-
-            console.log('⚠️ Strict related search returned low results, trying title fallback');
         } catch (error) {
-            console.warn('❌ Strict related fetch failed (Deprecated/Quota/Restricted):', error.message);
+            console.warn('❌ Strict related fetch restricted:', error.message);
         }
 
-        // 2. Fallback to Title Search (Much more reliable)
+        // 2. Fallback to Title Search (Aggressive)
         if (titleFallback) {
+            // Clean title of common noise to improve search relevance
+            const cleanTitle = titleFallback
+                .replace(/\|.*/g, '')
+                .replace(/\[\w+\]/g, '')
+                .replace(/\(.*\)/g, '')
+                .replace(/Official (Video|Audio|Music).*/i, '')
+                .trim();
+
             try {
-                console.log(`🔎 Falling back to title search: "${titleFallback}"`);
+                console.log(`🔎 Falling back to cleaned title search: "${cleanTitle}"`);
                 const searchResp = await api.get('/search', {
                     params: {
                         part: 'snippet',
-                        q: titleFallback,
+                        q: cleanTitle,
                         type: 'video',
                         maxResults,
                         pageToken,
                     },
                 });
 
-                // Mix in the videoId to help it be more relevant if it's a series
-                if (searchResp.data.items) {
+                if (searchResp.data.items?.length > 0) {
                     setCache(cacheKey, searchResp.data);
                     return searchResp.data;
                 }
             } catch (err) {
-                console.error('💥 Title fallback search also failed:', err);
+                console.error('💥 Title search failed:', err);
             }
         }
 
+        // 3. Last Resort: Just return empty or trending if everything else fails
         return { items: [], nextPageToken: null };
     },
 
