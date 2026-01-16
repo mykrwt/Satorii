@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { historyService } from '@services/storage';
-import VideoCard from '@components/common/VideoCard';
-import { youtubeAPI } from '@services/youtube';
-import { filterOutShorts, isYouTubeShort } from '@utils/videoFilters';
+import { historyService } from '../services/storage';
+import VideoCard from '../components/VideoCard';
+import { youtubeAPI } from '../services/youtube';
+import { filterOutShorts, isYouTubeShort } from '../utils/videoFilters';
 import './Library.css';
 
 const Library = () => {

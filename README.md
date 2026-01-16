@@ -44,35 +44,12 @@ Satorii is a full PWA. You don't need an APK to get an app-like experience:
 
 ---
 
-## 📂 Project Structure
-
-```text
-satorii/
-├── docs/               # Project documentation & ideas
-├── public/             # Static assets (icons, manifest)
-├── release/            # Compiled builds (APKs)
-├── scripts/            # Utility scripts (icon generation)
-└── src/
-    ├── assets/         # App-specific images/assets
-    ├── components/
-    │   ├── common/     # Reusable UI components
-    │   ├── layout/     # TopBar, SideNav
-    │   └── modals/     # Dialogs and modals
-    ├── pages/          # Page components with scoped CSS
-    ├── services/       # API and Storage logic
-    ├── styles/         # Global styles (App.css, index.css)
-    └── utils/          # Helper functions & filters
-```
-
----
-
 ## 🛠 Tech Stack
 - **Frontend**: React (Vite)
 - **Styling**: Vanilla CSS (Forest Noir Theme)
 - **API**: YouTube Data API v3
 - **Mobile**: Capacitor
-- **PWA**: Vite-PWA with Workbox Caching
-- **Aliases**: `@` (src), `@components`, `@pages`, etc.
+- **PWA**: Vite-PWA
 
 ---
 
@@ -80,4 +57,3 @@ satorii/
 To ensure background play works perfectly like YouTube Premium:
 - **On Android**: Disable "Battery Optimization" for Satorii/Chrome so the OS doesn't kill the background process.
 - **Media Controls**: Use the lock-screen play/pause buttons created by the Media Session API.
-- **Silent Audio**: The app uses a silent audio loop to keep the process alive in the background.

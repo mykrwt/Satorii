@@ -1,5 +1,12 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+﻿import { initializeApp } from "firebase/app";
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    sendEmailVerification
+} from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBdleSJnxH3DLe-eajThI8ULIhM7X46sdE",
@@ -21,15 +28,13 @@ export const authService = {
     login: (email, password) => {
         return signInWithEmailAndPassword(auth, email, password);
     },
-    signup: (email, password) => {
-        return createUserWithEmailAndPassword(auth, email, password);
+    signup: async (email, password) => {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(userCredential.user);
+        return userCredential;
     },
     logout: () => {
         return signOut(auth);
-    },
-    loginWithGoogle: () => {
-        const provider = new GoogleAuthProvider();
-        return signInWithPopup(auth, provider);
     },
     getCurrentUser: () => {
         return auth.currentUser;

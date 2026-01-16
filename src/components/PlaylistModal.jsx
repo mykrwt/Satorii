@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { youtubeAPI } from '../../services/youtube';
-import { playlistService } from '../../services/storage';
+import { youtubeAPI } from '../services/youtube';
+import { playlistService } from '../services/storage';
 import { X, Link as LinkIcon, Download, Loader2, CheckCircle2, AlertCircle, PlusCircle } from 'lucide-react';
 import './PlaylistModal.css';
 

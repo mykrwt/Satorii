@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { youtubeAPI } from '@services/youtube';
-import { historyService, watchLaterService, subscriptionService } from '@services/storage';
-import VideoCard from '@components/common/VideoCard';
-import ChannelAvatar from '@components/common/ChannelAvatar';
-import AddToPlaylistModal from '@components/modals/AddToPlaylistModal';
-import { filterOutShorts, isYouTubeShort } from '@utils/videoFilters';
+import { youtubeAPI } from '../services/youtube';
+import { historyService, watchLaterService, subscriptionService } from '../services/storage';
+import VideoCard from '../components/VideoCard';
+import ChannelAvatar from '../components/ChannelAvatar';
+import AddToPlaylistModal from '../components/AddToPlaylistModal';
+import { filterOutShorts, isYouTubeShort } from '../utils/videoFilters';
 import {
     Clock,
     Share2,
@@ -145,11 +145,11 @@ const VideoPlayer = ({ mini = false, videoId: propVideoId, onClose }) => {
                     const startBackgroundAudio = () => {
                         const audio = window.keepAliveAudio;
                         if (!audio) return;
-
+                        
                         // Set audio properties for better background playback
                         audio.volume = 0; // Keep it silent but alive
                         audio.loop = true;
-
+                        
                         // Try to play and maintain playback state
                         audio.play().then(() => {
                             navigator.mediaSession.playbackState = 'playing';

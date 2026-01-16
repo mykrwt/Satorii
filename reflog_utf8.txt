@@ -1,0 +1,20 @@
+﻿9162603 HEAD@{0}: commit: Fix: Final Restoration of styles and alias resolution
+0a0293c HEAD@{1}: commit: Fix: Restored missing global styles and updated path aliases
+0bfc767 HEAD@{2}: commit: Auth: Updated Firebase configuration and removed Google login
+bdde347 HEAD@{3}: commit: Fix: Hardened Sidebar/TopBar avatar sizing and fixed Grid alignment bugs
+89efeb0 HEAD@{4}: commit: Fix: Overhauled Master Layout with Logical Grid alignment and Premium Sidebar User Section
+f822d03 HEAD@{5}: commit: Fix: Logical overhaul of navigation and layout system for PC/Mobile consistency
+5ce82e5 HEAD@{6}: commit: Fix: Unified TopBar centered alignment on desktop, fixed Up Next recommendations using hybrid search, and improved Video Player performance
+96b73ae HEAD@{7}: commit: Fix: Unified TopBar alignment, fixed Playlist list layout, and removed notification bell
+9d5ddbb HEAD@{8}: commit: Fix: Removed duplicate branding and synchronized menu toggle across devices
+27bc238 HEAD@{9}: commit: UI Fix: Reverted mobile nav changes and strictly placed logo above sidebar items on PC
+e975ab0 HEAD@{10}: commit: UI: Moved logo to SideNav on desktop and removed username from TopBar
+00d0325 HEAD@{11}: commit: Production: Enhanced Cloud Sync for all data types (Subscriptions, History, Likes) and cleaned up logs
+e9f6b5b HEAD@{12}: commit: Feature: Firestore Cloud Sync for Playlists and Library data
+9d56480 HEAD@{13}: commit: Auth: Removed Google login and added email verification logic
+f2d7c9f HEAD@{14}: commit: Fix: Unified imports using path aliases to solve build resolution errors
+0587486 HEAD@{15}: commit: Fix: Pass user props and add Login route in App.jsx
+2de2744 HEAD@{16}: commit: Fix: Add missing firebase dependency
+eee1b19 HEAD@{17}: commit: Refactor project structure and add Firebase login system
+a0c36f4 HEAD@{18}: Branch: renamed refs/heads/master to refs/heads/main
+a0c36f4 HEAD@{20}: commit (initial): Refactor and Firebase Auth

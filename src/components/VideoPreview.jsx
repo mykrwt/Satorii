@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { youtubeAPI } from '@services/youtube';
+import { youtubeAPI } from '../services/youtube';
 import { Play, Eye, ThumbsUp, Calendar, X } from 'lucide-react';
 import ChannelAvatar from './ChannelAvatar';
 import './VideoPreview.css';
@@ -62,10 +62,10 @@ const VideoPreview = ({ videoId, onClose, anchorRect }) => {
     const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+        return date.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
         });
     };
 
@@ -79,10 +79,10 @@ const VideoPreview = ({ videoId, onClose, anchorRect }) => {
     const snippet = video.snippet;
     const stats = video.statistics;
     const contentDetails = video.contentDetails;
-
-    const thumbnail = snippet.thumbnails?.maxres?.url ||
-        snippet.thumbnails?.high?.url ||
-        snippet.thumbnails?.medium?.url;
+    
+    const thumbnail = snippet.thumbnails?.maxres?.url || 
+                     snippet.thumbnails?.high?.url || 
+                     snippet.thumbnails?.medium?.url;
 
     // Position the preview based on anchor
     const previewStyle = anchorRect ? {
@@ -98,7 +98,7 @@ const VideoPreview = ({ videoId, onClose, anchorRect }) => {
                 <button className="preview-close-btn" onClick={onClose}>
                     <X size={18} />
                 </button>
-
+                
                 <div className="preview-thumbnail-container" onClick={handlePlayVideo}>
                     <img src={thumbnail} alt={snippet.title} className="preview-thumbnail" />
                     <div className="preview-play-overlay">
@@ -111,16 +111,16 @@ const VideoPreview = ({ videoId, onClose, anchorRect }) => {
 
                 <div className="preview-content">
                     <h3 className="preview-title" onClick={handlePlayVideo}>{snippet.title}</h3>
-
+                    
                     <div className="preview-channel" onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/channel/${snippet.channelId}`);
                         onClose();
                     }}>
-                        <ChannelAvatar
-                            channelId={snippet.channelId}
-                            channelTitle={snippet.channelTitle}
-                            size={32}
+                        <ChannelAvatar 
+                            channelId={snippet.channelId} 
+                            channelTitle={snippet.channelTitle} 
+                            size={32} 
                         />
                         <span className="preview-channel-name">{snippet.channelTitle}</span>
                     </div>

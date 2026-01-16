@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { youtubeAPI } from '@services/youtube';
-import VideoCard from '@components/common/VideoCard';
-import { filterOutShortSearchItems, filterOutShorts, getVideoId } from '@utils/videoFilters';
+import { youtubeAPI } from '../services/youtube';
+import VideoCard from '../components/VideoCard';
+import { filterOutShortSearchItems, filterOutShorts, getVideoId } from '../utils/videoFilters';
 import './Home.css';
 
 const Home = () => {
@@ -374,7 +374,7 @@ const Home = () => {
                     })}
                 </div>
                 {loadingMore && <div className="spinner-small" style={{ margin: '40px auto' }}></div>}
-
+                
                 {/* Show message if no videos after filtering */}
                 {videos.length === 0 && !initialLoading && !error && (
                     <div className="loading-container">

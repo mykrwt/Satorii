@@ -8,7 +8,7 @@ import {
     likeService,
     subscriptionService,
     searchHistoryService
-} from '@services/storage';
+} from '../services/storage';
 import {
     Settings as SettingsIcon,
     Trash2,
@@ -18,22 +18,14 @@ import {
     Info,
     ShieldCheck,
     ChevronRight,
-    Monitor,
-    LogOut
+    Monitor
 } from 'lucide-react';
-import { authService } from '@services/firebase';
 import './Settings.css';
 
 const Settings = () => {
     const navigate = useNavigate();
     const [preferences, setPreferences] = useState(preferencesService.get());
     const [showClearConfirm, setShowClearConfirm] = useState(null);
-    const [user, setUser] = useState(authService.getCurrentUser());
-
-    const handleLogout = async () => {
-        await authService.logout();
-        navigate('/login');
-    };
 
     const handlePreferenceChange = (key, value) => {
         const updated = preferencesService.update({ [key]: value });
@@ -165,32 +157,6 @@ const Settings = () => {
                             </button>
                         </div>
                     </div>
-
-                    {/* Account Section */}
-                    {user && (
-                        <div className="settings-card span-two">
-                            <div className="card-header">
-                                <LogOut size={20} />
-                                <h2>Account</h2>
-                            </div>
-                            <div className="account-settings">
-                                <div className="user-profile-large">
-                                    <img
-                                        src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
-                                        alt="Profile"
-                                        className="profile-img-lg"
-                                    />
-                                    <div className="user-text-lg">
-                                        <h3>{user.displayName || user.email?.split('@')[0]}</h3>
-                                        <p>{user.email}</p>
-                                    </div>
-                                    <button className="btn-premium danger" onClick={handleLogout}>
-                                        <LogOut size={16} /> Sign Out
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
                     {/* About */}
                     <div className="settings-card span-two">

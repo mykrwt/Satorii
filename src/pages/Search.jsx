@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { youtubeAPI } from '@services/youtube';
-import VideoCard from '@components/common/VideoCard';
-import { searchHistoryService } from '@services/storage';
-import { generateRelatedTags } from '@utils/searchHelpers';
-import { filterOutShorts } from '@utils/videoFilters';
+import { youtubeAPI } from '../services/youtube';
+import VideoCard from '../components/VideoCard';
+import { searchHistoryService } from '../services/storage';
+import { generateRelatedTags } from '../utils/searchHelpers';
+import { filterOutShorts } from '../utils/videoFilters';
 import { Search as SearchIcon, X, Clock, History, TrendingUp, Sparkles } from 'lucide-react';
 import './Search.css';
 

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Menu, X } from 'lucide-react';
-import { youtubeAPI } from '@services/youtube';
+import { youtubeAPI } from '../services/youtube';
 import './TopBar.css';
 
-const TopBar = ({ toggleNav, user }) => {
+const TopBar = ({ toggleNav }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -143,24 +143,8 @@ const TopBar = ({ toggleNav, user }) => {
                 </div>
             </div>
 
-            <div className="top-bar-right">
-                {user ? (
-                    <div className="user-profile-section">
-                        <div className="user-info mobile-hidden">
-                            <span className="user-name">{user.displayName || user.email?.split('@')[0]}</span>
-                        </div>
-                        <img
-                            src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`}
-                            alt="Profile"
-                            className="user-avatar"
-                            onClick={() => navigate('/settings')}
-                        />
-                    </div>
-                ) : (
-                    <button className="btn-premium filled login-btn-top" onClick={() => navigate('/login')}>
-                        Sign In
-                    </button>
-                )}
+            <div className="top-bar-right desktop-only">
+                {/* Space for future desktop items or user avatar */}
             </div>
         </header>
     );

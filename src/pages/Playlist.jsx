@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { youtubeAPI } from '@services/youtube';
-import { playlistService, watchLaterService } from '@services/storage';
+import { youtubeAPI } from '../services/youtube';
+import { playlistService, watchLaterService } from '../services/storage';
 import { Play, ListVideo, Film, Shuffle, Trash2 } from 'lucide-react';
 import './Playlist.css';
 
-import VideoCard from '@components/common/VideoCard';
-import { filterOutShorts } from '@utils/videoFilters';
+import VideoCard from '../components/VideoCard';
+import { filterOutShorts } from '../utils/videoFilters';
 
 const Playlist = () => {
     const { playlistId } = useParams();
@@ -111,7 +111,7 @@ const Playlist = () => {
 
     const deletePlaylist = () => {
         if (playlistId === 'later') return; // Cannot delete Watch Later
-
+        
         playlistService.delete(playlistId);
         navigate('/'); // Redirect to home
     };
@@ -121,10 +121,10 @@ const Playlist = () => {
             playPlaylist(0);
             return;
         }
-
+        
         const shuffled = [...videos].sort(() => Math.random() - 0.5);
         const randomIndex = Math.floor(Math.random() * shuffled.length);
-
+        
         try {
             window.keepAliveAudio?.play?.().catch(() => { });
             if ('mediaSession' in navigator) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Plus, Check } from 'lucide-react';
-import { playlistService } from '../../services/storage';
+import { playlistService } from '../services/storage';
 import './AddToPlaylistModal.css';
 
 const AddToPlaylistModal = ({ video, onClose }) => {

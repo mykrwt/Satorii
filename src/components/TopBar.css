@@ -173,15 +173,8 @@
 }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .suggestion-item {
@@ -194,8 +187,7 @@
     color: var(--text-primary);
 }
 
-.suggestion-item:hover,
-.suggestion-item.selected {
+.suggestion-item:hover, .suggestion-item.selected {
     background: var(--bg-tertiary);
 }
 
@@ -230,10 +222,8 @@
 
     .search-container {
         height: 38px;
-        flex: 1;
-        /* Allow it to shrink/grow properly */
-        width: auto;
-        /* Override width: 100% */
+        flex: 1; /* Allow it to shrink/grow properly */
+        width: auto; /* Override width: 100% */
     }
 
     .search-input-wrapper {
@@ -266,64 +256,5 @@
         border-right: none;
         max-height: 60vh;
         overflow-y: auto;
-    }
-}
-
-/* User Profile Section */
-.user-profile-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 12px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-full);
-    cursor: pointer;
-    transition: var(--transition-smooth);
-}
-
-.user-profile-section:hover {
-    background: var(--bg-elevated);
-    border-color: var(--accent-secondary);
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
-}
-
-.user-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    max-width: 100px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: var(--bg-secondary);
-}
-
-.login-btn-top {
-    font-size: 13px;
-    height: 34px;
-    padding: 0 16px;
-}
-
-@media (max-width: 1024px) {
-    .top-bar-right {
-        min-width: 0;
-    }
-
-    .user-profile-section {
-        padding: 2px;
-        background: transparent;
-        border: none;
     }
 }
