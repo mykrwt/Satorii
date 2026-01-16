@@ -334,13 +334,8 @@ export const youtubeAPI = {
 
     // Get related videos (Smart Fallback)
     getRelatedVideos: async (videoId, maxResults = 20, pageToken = null, titleFallback = '') => {
-        const cacheKey = `related_${videoId}_${pageToken}`;
-        const cached = getCached(cacheKey);
-        if (cached) return cached;
-
-        // 1. Try strict relation first
+        // Try strict relation first
         try {
-            console.log(`🔗 Attempting strict related search for ${videoId}`);
             const response = await api.get('/search', {
                 params: {
                     part: 'snippet',
@@ -351,57 +346,44 @@ export const youtubeAPI = {
                 },
             });
 
-            if (response.data.items && response.data.items.length >= 5) {
-                setCache(cacheKey, response.data);
+            // If strict returns ample results, return them
+            if (response.data.items && response.data.items.length > 5) {
                 return response.data;
             }
-        } catch (error) {
-            console.warn('❌ Strict related fetch restricted:', error.message);
-        }
 
-        // 2. Fallback to Title Search (Aggressive)
-        if (titleFallback) {
-            // Clean title of common noise to improve search relevance
-            const cleanTitle = titleFallback
-                .replace(/\|.*/g, '')
-                .replace(/\[\w+\]/g, '')
-                .replace(/\(.*\)/g, '')
-                .replace(/Official (Video|Audio|Music).*/i, '')
-                .trim();
-
-            try {
-                console.log(`🔎 Falling back to cleaned title search: "${cleanTitle}"`);
+            // Otherwise, combine or fallback to title search if provided
+            if (titleFallback) {
                 const searchResp = await api.get('/search', {
                     params: {
                         part: 'snippet',
-                        q: cleanTitle,
+                        q: titleFallback,
                         type: 'video',
                         maxResults,
-                        pageToken,
                     },
                 });
+                return searchResp.data;
+            }
 
-                if (searchResp.data.items?.length > 0) {
-                    setCache(cacheKey, searchResp.data);
+            return response.data;
+        } catch (error) {
+            console.warn('Strict related fetch failed, failing over to search if possible.', error);
+            if (titleFallback) {
+                try {
+                    const searchResp = await api.get('/search', {
+                        params: {
+                            part: 'snippet',
+                            q: titleFallback,
+                            type: 'video',
+                            maxResults,
+                        },
+                    });
                     return searchResp.data;
+                } catch (err) {
+                    throw err;
                 }
-            } catch (err) {
-                console.error('💥 Title search failed:', err);
             }
+            throw error;
         }
-
-        // 3. Last Resort: Return Trending Videos
-        try {
-            console.log('🔥 Last Resort: Fetching trending videos for "Up Next"');
-            const trending = await this.getTrending('US', 10);
-            if (trending && trending.items && trending.items.length > 0) {
-                return trending;
-            }
-        } catch (err) {
-            console.warn('❌ Final fallback failed:', err);
-        }
-
-        return { items: [], nextPageToken: null };
     },
 
     // Get detailed video data for a list of IDs (Enrichment)
@@ -436,7 +418,6 @@ export const youtubeAPI = {
         if (cached) return cached;
 
         try {
-            console.log(`💬 Fetching comments for ${videoId}`);
             const response = await api.get('/commentThreads', {
                 params: {
                     part: 'snippet',
@@ -448,8 +429,8 @@ export const youtubeAPI = {
             setCache(cacheKey, response.data);
             return response.data;
         } catch (error) {
-            console.warn('⚠️ Comments fetch failed (Disabled/Quota/Restricted):', error.message);
-            return { items: [], nextPageToken: null };
+            console.error('Comments fetch failed:', error);
+            throw error;
         }
     },
 
