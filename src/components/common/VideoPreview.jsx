@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { youtubeAPI } from '../../services/youtube';
+import { youtubeAPI } from '@services/youtube';
 import { Play, Eye, ThumbsUp, Calendar, X } from 'lucide-react';
 import ChannelAvatar from './ChannelAvatar';
 import './VideoPreview.css';

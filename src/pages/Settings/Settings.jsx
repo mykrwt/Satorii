@@ -8,7 +8,7 @@ import {
     likeService,
     subscriptionService,
     searchHistoryService
-} from '../../services/storage';
+} from '@services/storage';
 import {
     Settings as SettingsIcon,
     Trash2,
@@ -21,7 +21,7 @@ import {
     Monitor,
     LogOut
 } from 'lucide-react';
-import { authService } from '../../services/firebase';
+import { authService } from '@services/firebase';
 import './Settings.css';
 
 const Settings = () => {

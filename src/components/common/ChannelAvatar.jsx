@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { youtubeAPI } from '../services/youtube';
+import { youtubeAPI } from '@services/youtube';
 import { User, Monitor } from 'lucide-react';
 import './ChannelAvatar.css';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { youtubeAPI } from '../../services/youtube';
-import VideoCard from '../../components/common/VideoCard';
-import { filterOutShortSearchItems, filterOutShorts, getVideoId } from '../../utils/videoFilters';
+import { youtubeAPI } from '@services/youtube';
+import VideoCard from '@components/common/VideoCard';
+import { filterOutShortSearchItems, filterOutShorts, getVideoId } from '@utils/videoFilters';
 import './Home.css';
 
 const Home = () => {

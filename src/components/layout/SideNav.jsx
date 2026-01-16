@@ -10,8 +10,8 @@ import {
     Plus,
     Settings
 } from 'lucide-react';
-import { playlistService, subscriptionService } from '../../services/storage';
-import PlaylistModal from '../modals/PlaylistModal';
+import { playlistService, subscriptionService } from '@services/storage';
+import PlaylistModal from '@components/modals/PlaylistModal';
 import './SideNav.css';
 
 const SideNav = ({ collapsed, toggleNav }) => {

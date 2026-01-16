@@ -2,11 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 
-import { youtubeAPI } from '../../services/youtube';
-import { subscriptionService } from '../../services/storage';
-import { filterOutShorts } from '../../utils/videoFilters';
+import { youtubeAPI } from '@services/youtube';
+import { subscriptionService } from '@services/storage';
+import { filterOutShorts } from '@utils/videoFilters';
 
-import VideoCard from '../../components/common/VideoCard';
+import VideoCard from '@components/common/VideoCard';
 import './Channel.css';
 
 const Channel = () => {

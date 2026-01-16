@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/firebase';
+import { authService } from '@services/firebase';
 import { LogIn, UserPlus, Mail, Lock, AlertCircle, Loader2 } from 'lucide-react';
 import './Login.css';
 
