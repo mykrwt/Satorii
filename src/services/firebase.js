@@ -30,6 +30,7 @@ export const authService = {
     },
     signup: async (email, password) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await sendEmailVerification(userCredential.user);
         return userCredential;
     },
     logout: () => {
