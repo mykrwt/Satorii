@@ -67,7 +67,7 @@ function AppContent() {
 
     return (
         <div className={`app-container ${activeVideoId && !isWatchPage && !miniPlayerClosed ? 'has-mini-player' : ''} ${isMobile ? 'is-mobile' : ''}`}>
-            <TopBar toggleNav={toggleNav} />
+            <TopBar toggleNav={toggleNav} collapsed={navCollapsed} />
             {!isOnline && (
                 <div className="offline-banner">
                     <span>⚠️ You're offline. Some features may not work.</span>

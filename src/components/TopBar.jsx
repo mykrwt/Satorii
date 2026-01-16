@@ -5,7 +5,7 @@ import { youtubeAPI } from '../services/youtube';
 import { authService } from '../services/firebase';
 import './TopBar.css';
 
-const TopBar = ({ toggleNav }) => {
+const TopBar = ({ toggleNav, collapsed }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [searchParams] = useSearchParams();
@@ -88,7 +88,7 @@ const TopBar = ({ toggleNav }) => {
     };
 
     return (
-        <header className="top-bar">
+        <header className={`top-bar ${collapsed ? 'collapsed' : ''}`}>
             {/* Notch and status bar protection */}
             <div className="safe-area-top" />
 
